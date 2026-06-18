@@ -47,3 +47,51 @@ export const containerVariants: Variants = {
         },
     },
 };
+
+export const overlayVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
+};
+
+export const modalVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.94, y: 12 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        transition: {
+            type: "spring" as const,
+            damping: 26,
+            stiffness: 320,
+            mass: 0.8,
+        },
+    },
+    exit: {
+        opacity: 0,
+        scale: 0.96,
+        y: 8,
+        transition: { duration: 0.2, ease: "easeIn" },
+    },
+};
+
+export const heroContainerVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.5,
+            ease: [0.16, 1, 0.3, 1],
+            staggerChildren: 0.08,
+        },
+    },
+};
+
+export const iconVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.85 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: { type: "spring" as const, stiffness: 300, damping: 25 }
+    },
+};
