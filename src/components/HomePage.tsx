@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import AuthModal from "./AuthModal"
-import HeroSection from "./HeroSection"
+import HeroSection from "./HeroSection";
 import VehicleSlider from "./VehicleSlider"
 
 const HomePage = () => {
