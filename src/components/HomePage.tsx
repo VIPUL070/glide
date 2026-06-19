@@ -8,7 +8,7 @@ const HomePage = () => {
   const [authOpen , setAuthOpen] = useState(false);
   return (
     <>
-    <HeroSection />
+    <HeroSection onAuthRequired={() => setAuthOpen(true)}/>
     <VehicleSlider />
     <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>

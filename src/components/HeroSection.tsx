@@ -4,9 +4,7 @@ import { motion } from "framer-motion";
 import Button from "./ui/Button";
 import { heroContainerVariants, iconVariants } from "@/lib/animation";
 
-const HeroSection = () => {
-
-
+const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
   return (
     <div className="relative min-h-dvh w-full overflow-hidden bg-neutral-950">
       <div
@@ -23,7 +21,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="text-[3rem] sm:text-[4rem] md:text-[5rem] text-primary tracking-tighter font-semibold flex flex-col leading-none"
+          className="text-[3rem] sm:text-[4rem] md:text-[5rem] text-primary tracking-tighter font-medium flex flex-col leading-none"
         >
           <span>BOOK</span>
           <span>YOUR</span>
@@ -70,7 +68,13 @@ const HeroSection = () => {
           transition={{ delay: 0.4 }}
           className="mt-2"
         >
-          <Button size="lg" className="rounded-xl px-8 shadow-lg shadow-black/20 hover:shadow-xl transition-all">
+          <Button
+            whileHover="hover"
+            whileTap={{ scale: 0.98 }}
+            onClick={onAuthRequired}
+            size="lg"
+            className="rounded-xl px-8 shadow-lg shadow-black/20 hover:shadow-xl transition-all"
+          >
             Book now
           </Button>
         </motion.div>
