@@ -1,7 +1,7 @@
 import NextAuth, { CredentialsSignin } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import connectDB from "./lib/db"
-import User from "./model/User.model"
+import User from "./models/User.model"
 import bcrypt from "bcryptjs"
 import { z } from "zod";
 import Google from "next-auth/providers/google"

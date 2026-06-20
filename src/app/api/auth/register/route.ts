@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db";
-import User from "@/model/User.model";
+import User from "@/models/User.model";
 import bcrypt from "bcryptjs";
 import z from "zod";
 import { NextRequest, NextResponse } from "next/server";

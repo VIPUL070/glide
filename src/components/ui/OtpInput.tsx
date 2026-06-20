@@ -1,13 +1,19 @@
 import { useRef } from "react";
 
 interface OtpProps {
-    otp: string[]
+  otp: string[];
 }
 
-const OtpInput = ({otp}:OtpProps) => {
+const OtpInput = ({ otp }: OtpProps) => {
   const otpRefs = useRef<HTMLInputElement[]>([]);
 
+  const handleOtpChange = (value: string, index: number) => {
+    if (isNaN(Number(value))) return;
 
+    if (value && index < otp.length - 1) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
 
   const handleOtpKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
