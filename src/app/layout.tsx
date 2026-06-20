@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from 'next/font/google';
 import "./globals.css";
+import Provider from "@/provider/Provider";
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -24,7 +25,11 @@ export default function RootLayout({
       lang="en"
       className={`${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Provider>
+          {children}
+        </Provider>
+      </body>
     </html>
   );
 }

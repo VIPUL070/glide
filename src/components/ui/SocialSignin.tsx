@@ -1,12 +1,19 @@
 "use Client";
-import {motion} from "motion/react";
+import { signIn } from "next-auth/react";
+import Button from "./Button";
 
 const SocialSignin = () => {
+
+  const handleGoogleLogin = async () => {
+    await signIn("google");
+  }
+
   return (
     <div className="w-full">
-      <motion.button
+      <Button
         whileHover={{ scale: 1.01, y: -1 }}
         whileTap={{ scale: 0.99 }}
+        onClick={handleGoogleLogin}
         className="flex w-full items-center justify-center gap-3 rounded-xl border border-secondary/10 bg-secondary/2 px-4 py-3.5 text-[1rem] font-medium text-secondary shadow-sm transition-all duration-200 hover:bg-secondary/5 cursor-pointer"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -32,7 +39,7 @@ const SocialSignin = () => {
           />
         </svg>
         Continue with Google
-      </motion.button>
+      </Button>
     </div>
   );
 };
