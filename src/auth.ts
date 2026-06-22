@@ -7,8 +7,8 @@ import { z } from "zod";
 import Google from "next-auth/providers/google"
 
 const LoginSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(1),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({

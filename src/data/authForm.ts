@@ -20,7 +20,7 @@ export const stepContent = {
     otp: {
         title: "Verification",
         subtitle: "Enter the code sent to your email",
-        buttonText: "Verify Identity",
+        buttonText: "Verify and Create Account",
         footerText: "Didn't receive the code?",
         footerActionText: "Resend Code",
         nextStep: 'login' as StepType
