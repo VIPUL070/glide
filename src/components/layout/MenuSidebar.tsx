@@ -1,3 +1,4 @@
+"use client";
 import { motion } from "framer-motion";
 import { NAV_ITEMS } from "@/data/home";
 import Link from "next/link";
