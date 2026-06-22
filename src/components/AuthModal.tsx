@@ -15,6 +15,7 @@ export interface AuthModalProps {
 
 const AuthModal = ({ open, onClose }: AuthModalProps) => {
   const [step, setStep] = useState<StepType>('login');
+  const [email, setEmail] = useState<string>("");
 
   return (
     <AnimatePresence>
@@ -52,9 +53,9 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
               </motion.button>
 
               {/* Conditional Form Render */}
-              {step === 'login' && <SignInForm  />}
-              {step === 'signup' && <SignUpForm  />}
-              {step === 'otp' && <OtpForm />}
+              {step === 'login' && <SignInForm />}
+              {step === 'signup' && <SignUpForm onStepChange={() => setStep('otp')} onEmailCaptured={setEmail} />}
+              {step === 'otp' && <OtpForm email={email} onStepChange={() => setStep('login')}/>}
 
               {/*Step Navigation Footer Layout */}
               <p className="mt-6 text-center text-[0.8rem] text-secondary/60 leading-relaxed px-4">

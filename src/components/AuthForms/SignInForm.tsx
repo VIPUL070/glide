@@ -22,14 +22,13 @@ function SignInForm() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+    setError("");
     try {
       const response = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
-      console.log(response);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);

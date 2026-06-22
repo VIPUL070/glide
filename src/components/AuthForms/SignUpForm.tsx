@@ -10,7 +10,12 @@ import axios from "axios";
 import Spinner from "../ui/Spinner";
 import FormError from "../ui/FormError";
 
-function SignUpForm() {
+interface SignUpFormProps {
+  onStepChange: () => void;
+  onEmailCaptured: (email: string) => void;
+}
+
+function SignUpForm({onStepChange,onEmailCaptured}: SignUpFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +32,8 @@ function SignUpForm() {
         email,
         password,
       });
-      console.log(data);
+      onEmailCaptured(email);
+      onStepChange();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setError(error.response?.data?.message ?? "Something went wrong!");
