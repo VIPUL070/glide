@@ -6,9 +6,10 @@ import { stepContent } from "@/data/authForm";
 import SocialSignin from "../ui/SocialSignin";
 import InputField from "../ui/InputField";
 import Button from "../ui/Button";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Spinner from "../ui/Spinner";
 import FormError from "../ui/FormError";
+import { useRouter } from "next/navigation";
 
 function SignInForm() {
   const [email, setEmail] = useState("");
@@ -16,26 +17,37 @@ function SignInForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const {data} = useSession();
-  console.log(data);
-  
+  const router = useRouter();
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     try {
       const response = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("An unexpected error occurred.");
+
+      if (response?.error) {
+        if (response.error === "CredentialsSignin") {
+          setError("Invalid email or password.");
+        } else {
+          setError(response.error);
+        }
+        setLoading(false);
+        return;
       }
-    } finally{
+
+      if (response?.ok) {
+        router.push("/");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Authentication crash:", error);
+      setError("An unexpected network error occurred.");
       setLoading(false);
     }
   };
@@ -79,8 +91,8 @@ function SignInForm() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-         
-         <AnimatePresence mode="wait">
+
+        <AnimatePresence mode="wait">
           {error && <FormError message={error} />}
         </AnimatePresence>
 
@@ -93,8 +105,8 @@ function SignInForm() {
         >
           {loading ? (
             <Spinner />
-           ) : (
-              <>
+          ) : (
+            <>
               {stepContent["login"].buttonText}
               <motion.div
                 variants={{ hover: { x: 3 } }}
@@ -102,9 +114,8 @@ function SignInForm() {
               >
                 <ArrowRight className="h-4 w-4" />
               </motion.div>
-              
-              </>
-            )}
+            </>
+          )}
         </Button>
       </form>
     </div>

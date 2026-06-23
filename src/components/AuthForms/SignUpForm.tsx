@@ -1,12 +1,12 @@
 "use client";
-import { SyntheticEvent, useState } from "react";
+import React, { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { stepContent } from "@/data/authForm";
 import SocialSignin from "../ui/SocialSignin";
 import InputField from "../ui/InputField";
 import Button from "../ui/Button";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import Spinner from "../ui/Spinner";
 import FormError from "../ui/FormError";
 
@@ -15,27 +15,33 @@ interface SignUpFormProps {
   onEmailCaptured: (email: string) => void;
 }
 
-function SignUpForm({onStepChange,onEmailCaptured}: SignUpFormProps) {
+function SignUpForm({ onStepChange, onEmailCaptured }: SignUpFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSignUp = async (e: SyntheticEvent) => {
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError("");
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
+
     try {
       const { data } = await axios.post("/api/auth/register", {
-        name,
-        email,
+        name: cleanName,
+        email: cleanEmail,
         password,
       });
-      onEmailCaptured(email);
+
+      onEmailCaptured(cleanEmail);
       onStepChange();
     } catch (error) {
-      if (axios.isAxiosError(error)) {
+      if (isAxiosError(error)) {
         setError(error.response?.data?.message ?? "Something went wrong!");
       } else if (error instanceof Error) {
         setError(error.message);
