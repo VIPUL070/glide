@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { DM_Sans } from 'next/font/google';
 import "./globals.css";
 import Provider from "@/provider/Provider";
+import ReduxProvider from "@/redux/ReduxProvider";
+import InitUser from "@/initUser";
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -27,7 +29,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Provider>
-          {children}
+          <ReduxProvider>
+            <InitUser />
+            {children}
+          </ReduxProvider>
         </Provider>
       </body>
     </html>
