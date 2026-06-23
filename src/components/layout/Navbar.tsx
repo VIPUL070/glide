@@ -9,6 +9,9 @@ import Link from "next/link";
 import AuthModal from "../AuthModal";
 import MenuSidebar from "./MenuSidebar";
 import SearchDrawer from "./SearchDrawer";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import ProfileMenu from "./ProfileMenu";
 
 const Navbar = () => {
   const { scrollY } = useScroll();
@@ -19,6 +22,8 @@ const Navbar = () => {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const { userData } = useSelector((state: RootState) => state.user);
 
   useMotionValueEvent(scrollY, "change", (currentScrollY) => {
     if (currentScrollY === 0) {
@@ -93,14 +98,18 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="col-span-1 border-l-[0.5px] border-white/20 flex justify-start text-[14px] tracking-tighter uppercase">
-            <Button
-              variant="transparent"
-              size="lg"
-              onClick={() => setAuthOpen(true)}
-            >
-              Log In
-            </Button>
+          <div className="col-span-1 border-l-[0.5px] border-white/20 flex justify-start items-center text-[14px] tracking-tighter uppercase pl-2">
+            {userData ? (
+              <ProfileMenu userData={userData} isMobile={false} />
+            ) : (
+              <Button
+                variant="transparent"
+                size="lg"
+                onClick={() => setAuthOpen(true)}
+              >
+                Log In
+              </Button>
+            )}
           </div>
 
         </div>
@@ -161,14 +170,18 @@ const Navbar = () => {
               </svg>
             </button>
 
-            <Button
-              variant="transparent"
-              size="sm"
-              onClick={() => setAuthOpen(true)}
-              className="text-[12px] sm:text-[13px] tracking-tighter uppercase px-2 sm:px-3"
-            >
-              Log In
-            </Button>
+            {userData ? (
+              <ProfileMenu userData={userData} isMobile={true} />
+            ) : (
+              <Button
+                variant="transparent"
+                size="sm"
+                onClick={() => setAuthOpen(true)}
+                className="text-[12px] sm:text-[13px] tracking-tighter uppercase px-2 sm:px-3"
+              >
+                Log In
+              </Button>
+            )}
           </div>
         </div>
       </motion.div>
