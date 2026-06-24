@@ -3,18 +3,22 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, LogOut, ChevronRight } from "lucide-react";
 import { IUser } from "@/models/User.model";
+import { useRouter } from "next/navigation";
 
 interface ProfileMenuProps {
   userData: IUser;
   isMobile?: boolean;
+  handleLogOut : () => void;
 }
 
 export const ProfileMenu = ({
   userData,
   isMobile = false,
+  handleLogOut
 }: ProfileMenuProps) => {
   const [isHovered, setIsHovered] = useState(false);
-
+  const router = useRouter();
+  
   const initial = userData?.name ? userData.name.charAt(0).toUpperCase() : "U";
 
   return (
@@ -59,7 +63,7 @@ export const ProfileMenu = ({
                 Account
               </p>
               <p className="text-[12px] font-medium truncate text-primary/70 mt-0.5">
-                {userData.email}
+                {userData.email}{"  "} {`[${userData.role}]`}
               </p>
             </div>
 
@@ -83,6 +87,7 @@ export const ProfileMenu = ({
             {userData?.role !== "partner" && (
               <>
                 <motion.div
+                  onClick={() => router.push('/partner/onboarding/vehicle')}
                   whileHover={{
                     x: 3,
                     backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -98,6 +103,7 @@ export const ProfileMenu = ({
 
             {/* Logout Option */}
             <motion.div
+              onClick={handleLogOut}
               whileHover={{ x: 3, backgroundColor: "rgba(239, 68, 68, 0.08)" }}
               className="flex items-center justify-between px-4 py-2.5 text-[12px] tracking-wider uppercase font-medium cursor-pointer text-red-400 hover:text-red-300 transition-colors duration-150"
             >

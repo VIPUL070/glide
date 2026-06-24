@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useMotionValueEvent,
+} from "framer-motion";
 import { NAV_ITEMS } from "@/data/home";
 import Image from "next/image";
 import Button from "../ui/Button";
@@ -9,9 +14,12 @@ import Link from "next/link";
 import AuthModal from "../AuthModal";
 import MenuSidebar from "./MenuSidebar";
 import SearchDrawer from "./SearchDrawer";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import ProfileMenu from "./ProfileMenu";
+import { signOut } from "next-auth/react";
+import { setUserData } from "@/redux/userSlice";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const { scrollY } = useScroll();
@@ -19,11 +27,13 @@ const Navbar = () => {
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [isFloating, setIsFloating] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { userData } = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   useMotionValueEvent(scrollY, "change", (currentScrollY) => {
     if (currentScrollY === 0) {
@@ -39,6 +49,17 @@ const Navbar = () => {
     setLastScrollY(currentScrollY);
   });
 
+  const handleSignOut = async () => {
+    try {
+      await signOut({ redirect: false });
+      dispatch(setUserData(null));
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign out processing exception:", error);
+    }
+  };
+
   let currentVariant = "visibleFull";
   if (!isNavVisible) currentVariant = "hidden";
   else if (isFloating) currentVariant = "visibleFloating";
@@ -51,7 +72,6 @@ const Navbar = () => {
         initial="visibleFull"
         className="fixed left-0 right-0 mx-auto z-50 min-h-[9vh] text-primary flex items-center justify-center"
       >
-
         <div className="hidden lg:grid relative w-full flex-1 self-stretch grid-cols-8">
           <div className="col-span-1 border-r-[0.5px] border-white/30 flex items-center justify-end">
             <a
@@ -100,7 +120,11 @@ const Navbar = () => {
 
           <div className="col-span-1 border-l-[0.5px] border-white/20 flex justify-start items-center text-[14px] tracking-tighter uppercase pl-2">
             {userData ? (
-              <ProfileMenu userData={userData} isMobile={false} />
+              <ProfileMenu
+                userData={userData}
+                isMobile={false}
+                handleLogOut={handleSignOut}
+              />
             ) : (
               <Button
                 variant="transparent"
@@ -111,7 +135,6 @@ const Navbar = () => {
               </Button>
             )}
           </div>
-
         </div>
 
         {/* MOBILE & TABLET NAVBAR LAYOUT                                            */}
@@ -137,8 +160,11 @@ const Navbar = () => {
                 />
               </svg>
             </button>
-            
-            <a href="" className="relative w-24 h-[5vh] sm:w-28 sm:h-[6vh] flex items-center bg-transparent">
+
+            <a
+              href=""
+              className="relative w-24 h-[5vh] sm:w-28 sm:h-[6vh] flex items-center bg-transparent"
+            >
               <Image
                 src="/nav-logo.svg"
                 alt="GLIDE Logo"
@@ -171,7 +197,11 @@ const Navbar = () => {
             </button>
 
             {userData ? (
-              <ProfileMenu userData={userData} isMobile={true} />
+              <ProfileMenu
+                userData={userData}
+                isMobile={true}
+                handleLogOut={handleSignOut}
+              />
             ) : (
               <Button
                 variant="transparent"
@@ -188,12 +218,16 @@ const Navbar = () => {
 
       {/* MOBILE / TABLET SIDEBAR DRAWER & OVERLAY (LEFT SIDE) */}
       <AnimatePresence>
-        {isSidebarOpen && <MenuSidebar handleClick={() => setIsSidebarOpen(false)} />}
+        {isSidebarOpen && (
+          <MenuSidebar handleClick={() => setIsSidebarOpen(false)} />
+        )}
       </AnimatePresence>
 
       {/* MOBILE / TABLET SEARCH SIDEBAR DRAWER & OVERLAY (RIGHT SIDE) */}
       <AnimatePresence>
-        {isSearchOpen && <SearchDrawer handleClick={() => setIsSearchOpen(false)}/>}
+        {isSearchOpen && (
+          <SearchDrawer handleClick={() => setIsSearchOpen(false)} />
+        )}
       </AnimatePresence>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
