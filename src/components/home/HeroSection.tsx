@@ -3,8 +3,23 @@ import { Bike, Bus, Car, Truck } from "lucide-react";
 import { motion } from "framer-motion";
 import { heroContainerVariants, iconVariants } from "@/lib/animation";
 import Button from "../ui/Button";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useRouter } from "next/navigation";
 
 const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
+  const {userData} = useSelector((state:RootState) => state.user);
+  const router = useRouter();
+
+  const handleBookingTransition = () => {
+  if (!userData) {
+    onAuthRequired();
+    return;
+  }
+  
+  router.push('/user/book');
+};
+
   return (
     <div className="relative min-h-dvh w-full overflow-hidden bg-neutral-950">
       <div
@@ -71,7 +86,7 @@ const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
           <Button
             whileHover="hover"
             whileTap={{ scale: 0.98 }}
-            onClick={onAuthRequired}
+            onClick={handleBookingTransition}
             size="lg"
             className="rounded-xl px-8 shadow-lg shadow-black/20 hover:shadow-xl transition-all"
           >

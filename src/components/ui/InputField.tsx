@@ -20,7 +20,7 @@ const InputField = ({ label, id, type, ...props }: InputFieldProps) => {
           id={id}
           type={isPassword ? (showPassword ? "text" : "password") : type}
           {...props}
-          className="w-full rounded-xl border border-secondary/10 bg-secondary/2 px-4 py-3.5 pr-11 text-[14px] text-secondary outline-none transition-all duration-300 placeholder:text-secondary/60 focus:border-secondary focus:bg-transparent focus:ring-1 focus:ring-secondary"
+          className="w-full rounded-xl border border-secondary/50 bg-secondary/2 px-4 py-3.5 pr-11 text-[14px] text-secondary outline-none transition-all duration-300 placeholder:text-secondary/60 focus:border-secondary focus:bg-transparent focus:ring-1 focus:ring-secondary"
         />
         {isPassword && (
           <button
