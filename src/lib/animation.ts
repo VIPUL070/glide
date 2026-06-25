@@ -136,3 +136,13 @@ export const itemVariants = {
     transition: springs.fluid,
   },
 };
+
+export const docsCardVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: springs.fluid },
+};
+
+export const inputRowVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: springs.fluid },
+};
