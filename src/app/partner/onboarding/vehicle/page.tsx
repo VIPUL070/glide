@@ -16,7 +16,7 @@ function VehicleType() {
   const router = useRouter();
 
   const currentStep = 1;
-  const totalSteps = 3;
+  const totalSteps = 8;
   const progress = (currentStep / totalSteps) * 100;
 
   const isFormValid =
