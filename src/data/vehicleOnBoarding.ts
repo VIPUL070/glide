@@ -7,7 +7,7 @@ interface VehicleOption {
   description: string;
 }
 
-type DocKey = "idProof" | "vehicleRc" | "drivingLicense";
+type DocKey = "aadhar" | "rc" | "license";
 
 interface DocumentTypeItem {
   key: DocKey; 
@@ -36,17 +36,17 @@ export const VEHICLE_OPTIONS: VehicleOption[] = [
 
 export const DOCUMENT_TYPES: DocumentTypeItem[] = [
   {
-    key: "idProof",
+    key: "aadhar",
     title: "Aadhaar / ID Proof",
     description: "Government-issued primary tracking identification framework document.",
   },
   {
-    key: "vehicleRc",
+    key: "rc",
     title: "Vehicle RC (Registration Certificate)",
     description: "Official registration certificate validating transport property compliance.",
   },
   {
-    key: "drivingLicense",
+    key: "license",
     title: "Driving License",
     description: "Valid government authorization ledger mapping operator permissions.",
   }]
