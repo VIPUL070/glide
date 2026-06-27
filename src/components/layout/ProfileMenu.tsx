@@ -63,7 +63,7 @@ export const ProfileMenu = ({
                 Account
               </p>
               <p className="text-[12px] font-medium truncate text-primary/70 mt-0.5">
-                {userData.email}{"  "} {`[${userData.role}]`}
+                {userData.email}
               </p>
             </div>
 
