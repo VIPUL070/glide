@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -11,6 +11,9 @@ import {
 import InputField from "@/components/ui/InputField";
 import Button from "@/components/ui/Button";
 import { BANK_FORM_FIELDS } from "@/data/vehicleOnBoarding";
+import Spinner from "@/components/ui/Spinner";
+import FormError from "@/components/ui/FormError";
+import axios, { isAxiosError } from "axios";
 
 function BankDetailsSetup() {
   const router = useRouter();
@@ -20,6 +23,8 @@ function BankDetailsSetup() {
   const [ifscCode, setIfscCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [upiId, setUpiId] = useState("");
+  const[loading , setLoading] = useState<boolean>(false);
+  const[error,setError] = useState<string>("");
 
   const currentStep = 3;
   const totalSteps = 8;
@@ -46,6 +51,34 @@ function BankDetailsSetup() {
     mobileNumber: setMobileNumber,
     upiId: setUpiId,
   };
+
+    const handleBankDetails = async () => {
+      if(!isFormValid) return;
+      if (loading) return;
+      setLoading(true);
+      setError("");
+      try {
+        const {data} = await axios.post(`/api/partner/onboarding/bank`, {
+          accountHolder: holderName,
+          accountNumber,
+          ifscCode,
+          mobileNumber,
+          upi: upiId,
+        });
+        console.log(data);
+  
+      } catch (error) {
+        if (isAxiosError(error)) {
+          setError(error.response?.data?.message ?? "Something went wrong!");
+        } else if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("An unexpected error occurred.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <div className="h-dvh bg-background text-secondary antialiased flex flex-col lg:flex-row w-full">
@@ -206,11 +239,16 @@ function BankDetailsSetup() {
               testing verification settle automatically within 24-48 hour.
             </p>
           </div>
+            
+            <AnimatePresence>
+              {error && <FormError message={error} /> }
+            </AnimatePresence>
 
           <Button
             whileHover={isFormValid ? "hover" : undefined}
             whileTap={isFormValid ? { scale: 0.98 } : undefined}
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
+            onClick={handleBankDetails}
             className={`
               group flex w-full sm:w-auto min-w-45 items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-medium transition-all duration-300 cursor-pointer
               ${
@@ -220,6 +258,10 @@ function BankDetailsSetup() {
               }
             `}
           >
+            {loading ? (
+              <Spinner />
+            ) : (
+              <>
             <span>Continue Step</span>
             <motion.div
               animate={isFormValid ? { x: [0, 3, 0] } : { x: 0 }}
@@ -227,6 +269,8 @@ function BankDetailsSetup() {
             >
               <ArrowRight className="h-4 w-4" />
             </motion.div>
+              </>
+            )}
           </Button>
         </motion.div>
       </div>

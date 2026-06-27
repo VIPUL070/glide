@@ -9,15 +9,12 @@ import Button from "../ui/Button";
 import { signIn } from "next-auth/react";
 import Spinner from "../ui/Spinner";
 import FormError from "../ui/FormError";
-import { useRouter } from "next/navigation";
 
-function SignInForm() {
+function SignInForm({handleClose}: {handleClose: () => void}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,18 +29,23 @@ function SignInForm() {
       });
 
       if (response?.error) {
-        if (response.error === "CredentialsSignin") {
+        console.log("NextAuth error payload:", response.error);
+        if (
+          response.error.includes("CredentialsSignin") ||
+          response.error.includes("CallbackRouteError")
+        ) {
           setError("Invalid email or password.");
         } else {
-          setError(response.error);
+          setError("An error occurred during sign in. Please try again.");
         }
         setLoading(false);
         return;
       }
 
       if (response?.ok) {
-        router.push("/");
-        router.refresh();
+        setLoading(false);
+        handleClose();
+        window.location.href = "/";
       }
     } catch (error) {
       console.error("Authentication crash:", error);

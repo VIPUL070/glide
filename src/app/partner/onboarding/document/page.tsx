@@ -1,30 +1,67 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { onboardingContainerVariants, springs } from "@/lib/animation";
 import Button from "@/components/ui/Button";
-import DocumentCard from "@/components/Document/DocumentCard";
+import DocumentCard from "@/components/Partner/DocumentCard";
 import { DOCUMENT_TYPES } from "@/data/vehicleOnBoarding";
+import axios, { isAxiosError } from "axios";
+import Spinner from "@/components/ui/Spinner";
+import FormError from "@/components/ui/FormError";
+
+type docsType = "aadhar" | "license" | "rc";
 
 function DocumentUpload() {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
-  const [docs, setDocs] = useState({
-    idProof: false,
-    vehicleRc: false,
-    drivingLicense: false,
+  const [docs, setDocs] = useState<Record<docsType, File | null>>({
+    aadhar: null,
+    rc: null,
+    license: null,
   });
 
   const currentStep = 2;
   const totalSteps = 8;
   const progress = (currentStep / totalSteps) * 100;
 
-  const isFormValid = docs.idProof && docs.vehicleRc && docs.drivingLicense;
+  const isFormValid = !!(docs.aadhar && docs.rc && docs.license);
 
-  const toggleDoc = (key: keyof typeof docs) => {
-    setDocs((prev) => ({ ...prev, [key]: !prev[key] }));
+  const handleUpload = (doc: docsType, file: File | null) => {
+    if (!file) return;
+    setDocs((prev) => ({ ...prev, [doc]: file }));
+  };
+
+  const handleDocs = async () => {
+    if (!isFormValid) return;
+    if (loading) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("aadhar", docs.aadhar!);
+      formData.append("license", docs.license!);
+      formData.append("rc", docs.rc!);
+
+      const { data } = await axios.post("/api/partner/onboarding/document", formData);
+      router.push("/partner/onboarding/bank");
+      router.refresh();
+      
+    } catch (error) {
+      if (isAxiosError(error)) {
+        setError(error.response?.data?.message ?? "Something went wrong!");
+      } else if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -128,9 +165,13 @@ function DocumentUpload() {
                 <DocumentCard
                   key={doc.key}
                   title={doc.title}
-                  description={doc.description}
-                  isUploaded={docs[doc.key]}
-                  onToggle={() => toggleDoc(doc.key)}
+                  description={
+                    docs[doc.key as docsType]
+                      ? `Selected: ${docs[doc.key as docsType]?.name}`
+                      :  doc.description
+                  }
+                  isUploaded={docs[doc.key as docsType] !== null}
+                  onChange={(file) => handleUpload(doc.key as docsType, file)}
                 />
               ))}
             </motion.div>
@@ -149,10 +190,15 @@ function DocumentUpload() {
             operations compliance branch within 24 operational hours.
           </p>
 
+          <AnimatePresence>
+            {error && <FormError message={error} />}
+          </AnimatePresence>
+
           <Button
             whileHover={isFormValid ? "hover" : undefined}
             whileTap={isFormValid ? { scale: 0.98 } : undefined}
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
+            onClick={handleDocs}
             className={`
               group flex w-full sm:w-auto min-w-45 items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-medium transition-all duration-300 cursor-pointer
               ${
@@ -162,13 +208,24 @@ function DocumentUpload() {
               }
             `}
           >
-            <span>Continue Step</span>
-            <motion.div
-              animate={isFormValid ? { x: [0, 3, 0] } : { x: 0 }}
-              transition={{ repeat: Infinity, duration: 1.5, repeatDelay: 1 }}
-            >
-              <ArrowRight className="h-4 w-4" />
-            </motion.div>
+            {" "}
+            {loading ? (
+              <Spinner />
+            ) : (
+              <>
+                <span>Continue Step</span>
+                <motion.div
+                  animate={isFormValid ? { x: [0, 3, 0] } : { x: 0 }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.5,
+                    repeatDelay: 1,
+                  }}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </motion.div>
+              </>
+            )}
           </Button>
         </motion.div>
       </div>
