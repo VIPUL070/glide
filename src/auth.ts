@@ -66,11 +66,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (account?.provider === "google") {
                 try {
                     await connectDB();
-                    const dbUser = await User.findOne({ email: user.email });
+                    let dbUser = await User.findOne({ email: user.email });
                     if (!dbUser) {
-                        await User.create({
+                        dbUser = await User.create({
                             name: user.name,
                             email: user.email,
+                            role: "user" 
                         });
                     }
 
@@ -83,7 +84,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     return false;
                 }
             }
-            return true; 
+            return true;
         },
 
         async jwt({ token, user }) {

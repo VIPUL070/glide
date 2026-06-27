@@ -53,7 +53,7 @@ const AuthModal = ({ open, onClose }: AuthModalProps) => {
               </motion.button>
 
               {/* Conditional Form Render */}
-              {step === 'login' && <SignInForm />}
+              {step === 'login' && <SignInForm handleClose={onClose} />}
               {step === 'signup' && <SignUpForm onStepChange={() => setStep('otp')} onEmailCaptured={setEmail} />}
               {step === 'otp' && <OtpForm email={email} onStepChange={() => setStep('login')}/>}
 
