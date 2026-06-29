@@ -84,7 +84,7 @@ export const ProfileMenu = ({
             <div className="h-px bg-background/10 my-1 mx-2" />
 
             {/* Become a partner option  */}
-            {userData?.role !== "partner" && (
+            {userData?.role === "user" && (
               <>
                 <motion.div
                   onClick={() => router.push('/partner/onboarding/vehicle')}
