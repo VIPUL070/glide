@@ -1,4 +1,12 @@
-import { Bike, Car, LucideIcon, Package, Truck, Zap, User, CreditCard, Landmark, Smartphone } from "lucide-react";
+import { Bike, Car, LucideIcon, Package, Truck, Zap, User, Landmark, Smartphone } from "lucide-react";
+
+export type DocKey = "aadhar" | "rc" | "license";
+
+export type Step = {
+  id: number;
+  title: string;
+  route?: string;
+};
 
 interface VehicleOption {
   id: string;
@@ -6,8 +14,6 @@ interface VehicleOption {
   icon: LucideIcon;
   description: string;
 }
-
-type DocKey = "aadhar" | "rc" | "license";
 
 interface DocumentTypeItem {
   key: DocKey; 
@@ -67,7 +73,6 @@ export const BANK_FORM_FIELDS: FormFieldItem[] = [
     label: "Account Number",
     type: "password",
     placeholder: "e.g., 001234567890",
-    icon: CreditCard,
     className: "relative",
   },
   {
@@ -97,4 +102,15 @@ export const BANK_FORM_FIELDS: FormFieldItem[] = [
     isOptional: true,
     className: "relative",
   },
+];
+
+export const STEPS: Step[] = [
+  { id: 1, title: "Vehicle", route: "/partner/onboarding/vehicle" },
+  { id: 2, title: "Document", route: "/partner/onboarding/document" },
+  { id: 3, title: "Bank", route: "/partner/onboarding/bank" },
+  { id: 4, title: "Review" },
+  { id: 5, title: "Video KYC" },
+  { id: 6, title: "Pricing" },
+  { id: 7, title: "Final Review" },
+  { id: 8, title: "Live" },
 ];
