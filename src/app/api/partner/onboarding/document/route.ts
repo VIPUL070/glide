@@ -91,6 +91,10 @@ export async function POST(req: NextRequest) {
             { upsert: true, new: true }
         );
 
+        if(user.steps < 2){
+            user.steps = 2;
+        }
+
         return NextResponse.json(
             { message: "Documents updated successfully.", partnerDocs },
             { status: 200 }

@@ -57,16 +57,7 @@ export async function POST(req: NextRequest) {
 
         const vehicleNumber = number.toUpperCase();
 
-        const duplicate = await Vehicle.findOne({ number: vehicleNumber });
-        if (duplicate) {
-            return NextResponse.json(
-                { message: "This vehicle is already registered by another user." },
-                { status: 403 }
-            );
-        }
-
         const vehicle = await Vehicle.findOne({ owner: user._id });
-
         if (vehicle) {
             vehicle.type = type;
             vehicle.number = vehicleNumber;
@@ -79,6 +70,14 @@ export async function POST(req: NextRequest) {
                 { status: 200 }
             );
         } else {
+            const duplicate = await Vehicle.findOne({ number: vehicleNumber });
+            if (duplicate) {
+                return NextResponse.json(
+                    { message: "This vehicle is already registered by another user." },
+                    { status: 403 }
+                );
+            }
+            
             const newVehicle = await Vehicle.create({
                 owner: user._id,
                 type,
@@ -86,6 +85,9 @@ export async function POST(req: NextRequest) {
                 vehicleModel,
             });
 
+            if (user.steps < 1) {
+                user.steps = 1;
+            }
             user.role = 'partner'
             user.save();
 
@@ -104,7 +106,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
 
         await connectDB();
@@ -133,7 +135,7 @@ export async function GET(req: NextRequest) {
         } else {
             return null;
         }
-        
+
     } catch (error) {
         console.error("Vehicle Details Fetching Error:", error);
         return NextResponse.json(

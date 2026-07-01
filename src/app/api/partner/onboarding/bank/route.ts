@@ -65,11 +65,14 @@ export async function POST(req: NextRequest) {
             { upsert: true, new: true }
         );
 
+        if(user.steps < 3){
+            user.steps = 3;
+        }
         user.mobileNumber = mobileNumber;
         await user.save();
 
         return NextResponse.json(
-            { message: "Bank details saved successfully.", data: bankDetails },
+            { message: "Bank details saved successfully.", bankDetails},
             { status: 200 }
         );
 
@@ -82,7 +85,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         await connectDB();
         const session = await auth();
@@ -105,7 +108,7 @@ export async function GET(req: NextRequest) {
         
         if (bankDetails) {
             return NextResponse.json(
-            { message: "Bank details fetched successfully.", bankDetails},
+            { message: "Bank details fetched successfully.", bankDetails , mobileNumber: user.mobileNumber},
             { status: 200 }
         );
         } else {
