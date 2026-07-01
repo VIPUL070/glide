@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { VEHICLE_OPTIONS } from "@/data/vehicleOnBoarding";
@@ -29,12 +29,26 @@ function VehicleType() {
     regNumber.trim().length > 0 &&
     vehicleModel.trim().length > 0;
 
+  useEffect(() => {
+    const getVehicle = async () => {
+      try {
+        const { data } = await axios.get(`/api/partner/onboarding/vehicle`);
+        setSelectedVehicle(data.vehicle.type)
+        setRegNumber(data.vehicle.number)
+        setVehicleModel(data.vehicle.vehicleModel)
+      } catch (error) {
+        console.log(error);
+      } 
+    };
+    getVehicle();
+  });
+
   const handleVehicle = async () => {
     if (loading) return;
     setLoading(true);
     setError("");
     try {
-      const {data} = await axios.post(`/api/partner/onboarding/vehicle`, {
+      const { data } = await axios.post(`/api/partner/onboarding/vehicle`, {
         type: selectedVehicle,
         number: regNumber,
         vehicleModel,
@@ -42,7 +56,6 @@ function VehicleType() {
 
       router.push(`/partner/onboarding/document`);
       router.refresh();
-
     } catch (error) {
       if (isAxiosError(error)) {
         setError(error.response?.data?.message ?? "Something went wrong!");
@@ -181,9 +194,11 @@ function VehicleType() {
                 label="Vehicle Registration Number"
                 id="reg-number"
                 type="text"
-                placeholder="e.g., DL 1CA 1234"
+                placeholder="e.g., DL 12CA 1234"
                 value={regNumber}
-                onChange={(e) => setRegNumber(e.target.value.toLocaleUpperCase())}
+                onChange={(e) =>
+                  setRegNumber(e.target.value.toLocaleUpperCase())
+                }
                 autoComplete="off"
               />
               <InputField
@@ -205,9 +220,9 @@ function VehicleType() {
           transition={{ ...springs.fluid, delay: 0.3 }}
           className="mt-4 pt-6 border-t border-secondary/8 flex flex-col items-center justify-between gap-4"
         >
-        <AnimatePresence>
-          {error && <FormError message={error} /> }
-        </AnimatePresence>
+          <AnimatePresence>
+            {error && <FormError message={error} />}
+          </AnimatePresence>
 
           <Button
             whileHover={isFormValid ? "hover" : undefined}

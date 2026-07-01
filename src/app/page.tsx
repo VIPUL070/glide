@@ -7,16 +7,24 @@ import AdminDashboard from "@/components/Admin/AdminDashboard";
 
 export default async function Home() {
   const session = await auth();
+  const role = session?.user?.role;
+
+  const renderDashboard = () => {
+    switch (role) {
+      case "partner":
+        return <PartnerDashboard />;
+      case "admin":
+        return <AdminDashboard />;
+      case "user":
+        return <HomePage />;
+      default:
+        return <HomePage />;
+    }
+  };
   return (
     <div className="w-full min-h-dvh bg-background">
       <Navbar />
-      {session?.user?.role === "partner" ? (
-        <PartnerDashboard />
-      ) : session?.user?.role === "admin" ? (
-        <AdminDashboard />
-      ) : (
-        <HomePage />
-      )}
+      {renderDashboard()}
       <Footer />
     </div>
   );
