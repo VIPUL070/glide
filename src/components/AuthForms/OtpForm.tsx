@@ -43,7 +43,7 @@ function OtpForm({email, onStepChange}: OTPProps) {
     setLoading(true);
     setError("");
     try {
-      const { data } = await axios.post("/api/auth/verify-otp", {
+      await axios.post("/api/auth/verify-otp", {
         email,
         otp: otp.join(""),
       });

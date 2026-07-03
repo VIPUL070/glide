@@ -101,7 +101,7 @@ const Overlay = ({ overlayState, handleOverlay }: OverlayProps) => {
               scale: 0.98,
               transition: { duration: 0.25, ease: "easeInOut" },
             }}
-            className="fixed bottom-0 md:bottom-10 left-0 right-0 max-w-[700px] mx-auto bg-white dark:bg-neutral-900 border-t border-x border-neutral-200 dark:border-neutral-800 md:rounded-[2.5rem] rounded-t-[2.5rem] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] p-8 z-50 overflow-hidden"
+            className="fixed bottom-0 md:bottom-10 left-0 right-0 max-w-175 mx-auto bg-white dark:bg-neutral-900 border-t border-x border-neutral-200 dark:border-neutral-800 md:rounded-[2.5rem] rounded-t-[2.5rem] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] p-8 z-50 overflow-hidden"
           >
             <div className="w-12 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full mx-auto mb-6 opacity-80" />
 

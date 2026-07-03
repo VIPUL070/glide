@@ -32,7 +32,7 @@ function SignUpForm({ onStepChange, onEmailCaptured }: SignUpFormProps) {
     const cleanName = name.trim();
 
     try {
-      const { data } = await axios.post("/api/auth/register", {
+      await axios.post("/api/auth/register", {
         name: cleanName,
         email: cleanEmail,
         password,
