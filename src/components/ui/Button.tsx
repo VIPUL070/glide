@@ -22,7 +22,7 @@ const baseClasses =
   "relative inline-flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg font-medium uppercase tracking-wider transition-colors duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-border-strong disabled:pointer-events-none disabled:opacity-60 text-center text-[14px]";
 
 const sizeClasses: Record<Size, string> = {
-  sm: "px-6 min-w-[100px] py-2 sm:min-w-[160px]", 
+  sm: "px-3 min-w-[100px] py-2 sm:min-w-[120px]", 
   md: "px-4 min-w-[140px] py-2.2 sm:min-w-[200px]", 
   lg: "px-8 min-w-[300px]  py-2.5 md:min-w-[360px]", 
 };

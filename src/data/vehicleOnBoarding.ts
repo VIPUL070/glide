@@ -108,7 +108,7 @@ export const STEPS: Step[] = [
   { id: 1, title: "Vehicle", route: "/partner/onboarding/vehicle" },
   { id: 2, title: "Document", route: "/partner/onboarding/document" },
   { id: 3, title: "Bank", route: "/partner/onboarding/bank" },
-  { id: 4, title: "Review" },
+  { id: 4, title: "Review"},
   { id: 5, title: "Video KYC" },
   { id: 6, title: "Pricing" },
   { id: 7, title: "Final Review" },
