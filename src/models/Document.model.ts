@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface IDocument{
+export interface IDocument{
     owner: mongoose.Types.ObjectId;
     aadharUrl: string;
     rcUrl: string;
