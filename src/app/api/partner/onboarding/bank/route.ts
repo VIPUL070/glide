@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import connectDB from "@/lib/db";
-import BankDetail from "@/models/BankDetail.model.";
+import BankDetail from "@/models/BankDetail.model";
 import User from "@/models/User.model";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -65,9 +65,8 @@ export async function POST(req: NextRequest) {
             { upsert: true, new: true }
         );
 
-        if(user.steps < 3){
-            user.steps = 3;
-        }
+        user.steps = 3;
+        user.partnerStatus = "pending"
         user.mobileNumber = mobileNumber;
         await user.save();
 

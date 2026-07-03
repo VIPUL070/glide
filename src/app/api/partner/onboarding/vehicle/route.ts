@@ -65,6 +65,10 @@ export async function POST(req: NextRequest) {
             vehicle.status = "pending";
             await vehicle.save();
 
+            user.steps = user.steps < 2 ? 2 : 3;
+            user.status = "pending";
+            await user.save(); 
+
             return NextResponse.json(
                 { message: "Vehicle details updated successfully!", vehicle },
                 { status: 200 }
@@ -77,7 +81,7 @@ export async function POST(req: NextRequest) {
                     { status: 403 }
                 );
             }
-            
+
             const newVehicle = await Vehicle.create({
                 owner: user._id,
                 type,
@@ -89,6 +93,7 @@ export async function POST(req: NextRequest) {
                 user.steps = 1;
             }
             user.role = 'partner'
+            user.partnerStatus = "pending"
             user.save();
 
             return NextResponse.json(

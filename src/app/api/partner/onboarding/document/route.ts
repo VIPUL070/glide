@@ -93,7 +93,11 @@ export async function POST(req: NextRequest) {
 
         if(user.steps < 2){
             user.steps = 2;
+        } else {
+            user.steps = 3
         }
+        user.partnerStatus = "pending"
+        await user.save();
 
         return NextResponse.json(
             { message: "Documents updated successfully.", partnerDocs },

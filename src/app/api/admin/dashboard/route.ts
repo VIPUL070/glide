@@ -29,7 +29,7 @@ export async function GET() {
             User.find({
                 role: "partner",
                 partnerStatus: "pending",
-                steps: 3
+                steps: {$gte : 3}
             }).lean()
         ]);
 
