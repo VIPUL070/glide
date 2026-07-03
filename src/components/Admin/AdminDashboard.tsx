@@ -12,9 +12,9 @@ import {
   Car,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import AdminCards from "../AuthForms/AdminCards";
-import OperationCard from "./OperationCard";
+import AdminCards from "./AdminCards";
 import { DashboardStats, ReviewData } from "@/data/adminDashboard";
+import OperationCard from "./OperationCard";
 
 function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
