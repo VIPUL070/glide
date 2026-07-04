@@ -41,7 +41,7 @@ function VehicleType() {
       } 
     };
     getVehicle();
-  });
+  },[]);
 
   const handleVehicle = async () => {
     if (loading) return;

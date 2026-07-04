@@ -66,7 +66,7 @@ function BankDetailsSetup() {
       }
     };
     getBankDetails();
-  });
+  },[]);
 
   const handleBankDetails = async () => {
     if (!isFormValid) return;
@@ -81,7 +81,7 @@ function BankDetailsSetup() {
         mobileNumber,
         upi: upiId,
       });
-      
+      router.push('/');
     } catch (error) {
       if (isAxiosError(error)) {
         setError(error.response?.data?.message ?? "Something went wrong!");
