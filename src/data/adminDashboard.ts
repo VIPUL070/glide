@@ -9,5 +9,6 @@ export interface ReviewData {
   name:string;
   email:string;
   _id:string;
-  type:string;
+  type?:string;
+  videoKycStatus?: string;
 }
