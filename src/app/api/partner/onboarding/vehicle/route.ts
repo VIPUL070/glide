@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
             await vehicle.save();
 
             user.steps = user.steps < 2 ? 2 : 3;
-            user.status = "pending";
+            user.partnerStatus = "pending";
+            user.partnerStatus = "pending";
             await user.save(); 
 
             return NextResponse.json(

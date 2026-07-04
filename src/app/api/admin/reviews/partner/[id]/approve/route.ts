@@ -49,6 +49,7 @@ export async function PATCH(
         }
 
         partner.partnerStatus = "approved";
+        partner.videoKycStatus = "pending";
         partner.steps = 4;
         partnerDocs.status = "approved";
         partnerBank.status = "verified";
