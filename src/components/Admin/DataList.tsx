@@ -1,9 +1,11 @@
+"use cleint";
 import { ArrowUpRight, CheckCircle2, User } from "lucide-react";
 import { ReviewData } from "@/data/adminDashboard";
 import { itemVariants } from "@/lib/animation";
-import {motion} from "motion/react";
+import { motion } from "motion/react";
 import Button from "../ui/Button";
 import { useRouter } from "next/navigation";
+import axios, { isAxiosError } from "axios";
 
 interface DataListProps {
   data: ReviewData[];
@@ -12,10 +14,7 @@ interface DataListProps {
 
 const DataList = ({ data, type }: DataListProps) => {
   const router = useRouter();
-
-  const isKyc = type === "kyc";
-  const actionLabel = isKyc ? "KYC" : "Review";
-
+  
   const getInitials = (name: string) => {
     if (!name) return "";
     return name
@@ -26,19 +25,38 @@ const DataList = ({ data, type }: DataListProps) => {
       .slice(0, 2);
   };
 
+  const handleStartKyc = async (id: string) => {
+    try {
+      await axios.get(`/api/admin/videoKyc/start/${id}`);
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.log(error?.response?.data?.message ?? "Something went wrong");
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log("An unexpected error occurred.");
+      }
+    }
+  };
+
   if (!data || data.length === 0) {
     return (
       <div className="flex flex-col gap-1 items-center justify-center py-8 text-center h-full min-h-37.5">
-        <p className="text-green-400 font-light pb-1"><CheckCircle2 /></p>
-        <p className="text-xs text-primary font-medium tracking-tight">All caught up</p>
-        <p className="text-[11px] text-primary/50 mt-0.5">No pending items require attention</p>
+        <p className="text-green-400 font-light pb-1">
+          <CheckCircle2 />
+        </p>
+        <p className="text-xs text-primary font-medium tracking-tight">
+          All caught up
+        </p>
+        <p className="text-[11px] text-primary/50 mt-0.5">
+          No pending items require attention
+        </p>
       </div>
     );
   }
 
   return (
     <div className="flex-1 flex flex-col justify-between overflow-hidden mt-2">
-
       <div className="space-y-2 max-h-43.75 overflow-y-auto pr-1 scrollbar-none">
         {data.slice(0, 3).map((item, index) => (
           <motion.div
@@ -48,11 +66,11 @@ const DataList = ({ data, type }: DataListProps) => {
             animate="visible"
             className="group flex items-center justify-between gap-4 p-3 rounded-xl bg-black text-primary border border-neutral-200/10 hover:border-neutral-200/20 transition-all duration-300 ease-out cursor-pointer"
           >
-
             <div className="flex items-center gap-3 min-w-0">
-
               <div className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center border border-neutral-200/30 text-secondary font-semibold text-[14px] tracking-wider shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
-                {getInitials(item.name) || <User className="w-3.5 h-3.5 text-secondary/60" />}
+                {getInitials(item.name) || (
+                  <User className="w-3.5 h-3.5 text-secondary/60" />
+                )}
               </div>
 
               <div className="min-w-0 flex flex-col">
@@ -65,14 +83,30 @@ const DataList = ({ data, type }: DataListProps) => {
               </div>
             </div>
 
-            <Button
-              size="sm"
-              onClick={type === "partner" ? () => router.push(`/admin/reviews/partner/${item._id}`) : () => router.push(`/admin/reviews/vehicle/${item._id}`) }
-              className="bg-background hover:bg-neutral-100 text-black py-1 text-[12px] font-medium tracking-tight"
-            >
-              <span>{actionLabel}</span>
-              <ArrowUpRight className="w-4 h-4 text-black group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200 ease-out" />
-            </Button>
+            {type === "kyc" ? (
+              <Button
+                size="sm"
+                disabled={item.videoKycStatus === "in_progress"}
+                onClick={() => {handleStartKyc(item._id); router.refresh();}}
+                className="bg-background hover:bg-neutral-100 text-black py-1 text-[12px] font-medium tracking-tight"
+              >
+                <span>{item.videoKycStatus === "pending" ? "KYC" : "Join" }</span>
+                <ArrowUpRight className="w-4 h-4 text-black group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200 ease-out" />
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={
+                  type === "partner"
+                    ? () => router.push(`/admin/reviews/partner/${item._id}`)
+                    : () => router.push(`/admin/reviews/vehicle/${item._id}`)
+                }
+                className="bg-background hover:bg-neutral-100 text-black py-1 text-[12px] font-medium tracking-tight"
+              >
+                <span>Review</span>
+                <ArrowUpRight className="w-4 h-4 text-black group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200 ease-out" />
+              </Button>
+            )}
           </motion.div>
         ))}
       </div>

@@ -24,21 +24,42 @@ function AdminDashboard() {
     rejectedPartners: 0,
   });
   const [partnerReviews, setPartnerReviews] = useState<ReviewData[]>([]);
-  const [pendingKyc , setPendingKyc] = useState([]);
-  const [vehicleReviews , setVehicleReviews] = useState([]);
+  const [pendingKyc, setPendingKyc] = useState([]);
+  const [vehicleReviews, setVehicleReviews] = useState([]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const getDashboardData = async () => {
       try {
-        const { data } = await axios.get("/api/admin/dashboard");
+        const { data } = await axios.get("/api/admin/dashboard", { signal });
         setStats(data);
         setPartnerReviews(data.pendingPartnerReview);
-        console.log(data);
       } catch (error) {
-        console.log("Error loading dashboard metrics:", error);
+        if (axios.isCancel(error)) return;
+        console.error("Error loading dashboard metrics:", error);
       }
     };
+
+    const getKycData = async () => {
+      try {
+        const { data } = await axios.get("/api/admin/videoKyc/pending", {
+          signal,
+        });
+        setPendingKyc(data.partners)
+      } catch (error) {
+        if (axios.isCancel(error)) return;
+        console.error("Error loading KYC metrics:", error);
+      }
+    };
+
     getDashboardData();
+    getKycData();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const cardData = [

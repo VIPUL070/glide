@@ -16,13 +16,14 @@ interface OverlayProps {
 const Overlay = ({ overlayState, handleOverlay }: OverlayProps) => {
   const {id} = useParams();
   const [rejectionReason, setRejectionReason] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [approveLoading, setApproveLoading] = useState<boolean>(false);
+  const [rejectLoading, setRejectLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const router = useRouter();
 
   const handleApprove = async () => {
-    if (loading) return;
-    setLoading(true);
+    if (approveLoading) return;
+    setApproveLoading(true);
     setError("");
     try {
       await axios.patch(`/api/admin/reviews/partner/${id}/approve`);
@@ -38,7 +39,7 @@ const Overlay = ({ overlayState, handleOverlay }: OverlayProps) => {
         setError("An unexpected error occurred.");
       }
     } finally {
-      setLoading(false);
+      setApproveLoading(false);
     }
   };
 
@@ -47,8 +48,8 @@ const Overlay = ({ overlayState, handleOverlay }: OverlayProps) => {
       setError("Please provide a reason for rejection.");
       return;
     }
-    if (loading) return;
-    setLoading(true);
+    if (rejectLoading) return;
+    setRejectLoading(true);
     setError("");
     try {
       await axios.patch(`/api/admin/reviews/partner/${id}/reject` , {rejectionReason});
@@ -65,7 +66,7 @@ const Overlay = ({ overlayState, handleOverlay }: OverlayProps) => {
         setError("An unexpected error occurred.");
       }
     } finally {
-      setLoading(false);
+      setRejectLoading(false);
     }
   };
 
@@ -139,16 +140,16 @@ const Overlay = ({ overlayState, handleOverlay }: OverlayProps) => {
                     <Button
                       onClick={closeOverlay}
                       className="flex-1"
-                      disabled={loading}
+                      disabled={rejectLoading}
                     >
-                      {loading ? <Spinner /> : "Cancel"}
+                      Cancel
                     </Button>
                     <Button
-                      disabled={loading}
+                      disabled={rejectLoading}
                       onClick={handleReject}
                       className="flex-1 bg-rose-600 hover:bg-rose-600"
                     >
-                      {loading ? <Spinner /> : "Confirm"}
+                      {rejectLoading ? <Spinner /> : "Confirm"}
                     </Button>
                   </div>
                 </motion.div>
@@ -174,18 +175,18 @@ const Overlay = ({ overlayState, handleOverlay }: OverlayProps) => {
                   </p>
                   <div className="flex gap-3 pt-4">
                     <Button
-                      disabled={loading}
+                      disabled={approveLoading}
                       onClick={closeOverlay}
                       className="flex-1"
                     >
-                      {loading ? <Spinner /> : "Cancel"}
+                      Cancel
                     </Button>
                     <Button
-                      disabled={loading}
+                      disabled={approveLoading}
                       onClick={handleApprove}
                       className="flex-1 text-black bg-background hover:bg-background"
                     >
-                      {loading ? <Spinner /> : "Confirm"}
+                      {approveLoading ? <Spinner /> : "Confirm"}
                     </Button>
                   </div>
                 </motion.div>
