@@ -11,4 +11,5 @@ export interface ReviewData {
   _id:string;
   type?:string;
   videoKycStatus?: string;
+  videoKycRoomId?: string;
 }
