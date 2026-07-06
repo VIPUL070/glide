@@ -114,3 +114,107 @@ export const STEPS: Step[] = [
   { id: 7, title: "Final Review" },
   { id: 8, title: "Live" },
 ];
+
+export interface CardContent {
+  badge: string;
+  heading: string;
+  description: string;
+  features: string[];
+  nextStepNumber: number;
+  nextStepTitle: string;
+  route?:string;
+}
+
+export const STEP_CARD_CONTENT: Record<number, CardContent> = {
+  0: {
+    badge: "Vehicle Details",
+    heading: "Add Your Vehicle",
+    description: "Provide your vehicle details and registration information to get started on the platform.",
+    features: [
+      "RC & Insurance validation ready",
+      "Supports multiple vehicle categories"
+    ],
+    nextStepNumber: 2,
+    nextStepTitle: "Document Upload",
+    route: "/partner/onboarding/vehicle"
+  },
+  1: {
+    badge: "Document Upload",
+    heading: "Verify Your Identity",
+    description: "Upload your driver's license, Aadhar, and RC for secure background verification.",
+    features: [
+      "Secure data encryption checks",
+      "Automated compliance parsing"
+    ],
+    nextStepNumber: 3,
+    nextStepTitle: "Bank Authentication",
+    route: "/partner/onboarding/document"
+  },
+  2: {
+    badge: "Bank Details",
+    heading: "Verify Your Bank Details",
+    description: "Connect your account securely to process weekly payouts, fuel incentives, and performance-based ecosystem bonuses.",
+    features: [
+      "Instant deposits configuration ready",
+      "Encrypted with bank-grade AES-256 protocols"
+    ],
+    nextStepNumber: 4,
+    nextStepTitle: "Profile Review",
+    route: "/partner/onboarding/bank"
+  },
+  3: {
+    badge: "Profile Review",
+    heading: "Application Processing",
+    description: "Our operations team is verifying your submitted vehicle details and identity structures.",
+    features: [
+      "Real-time audit queue placement",
+      "Support desk alert monitoring"
+    ],
+    nextStepNumber: 5,
+    nextStepTitle: "Video KYC"
+  },
+  4: {
+    badge: "KYC Completed",
+    heading: "KYC Verification Finished",
+    description: "Your live check and digital identity requirements are now fully processed and valid.",
+    features: [
+      "Verified user criteria passed",
+      "Credentials securely locked"
+    ],
+    nextStepNumber: 6,
+    nextStepTitle: "Pricing Setup"
+  },
+  5: {
+    badge: "Pricing Configuration",
+    heading: "Ecosystem Pricing",
+    description: "Review and evaluate your dynamic payout scales, operational bonuses, and milestone structures.",
+    features: [
+      "Transparent tier configuration",
+      "Performance incentives calculated"
+    ],
+    nextStepNumber: 7,
+    nextStepTitle: "Final Review"
+  },
+  6: {
+    badge: "Final Audit",
+    heading: "Concluding Compliance Check",
+    description: "Your complete ecosystem profile is currently undergoing the final verification protocol.",
+    features: [
+      "Contract configurations preparing",
+      "Compliance audit in final run"
+    ],
+    nextStepNumber: 8,
+    nextStepTitle: "Take Account Live"
+  },
+  7: {
+    badge: "Live Status",
+    heading: "Welcome Aboard Partner!",
+    description: "Your partner profile is fully activated. You are now officially integrated into the platform network.",
+    features: [
+      "Live request matching unlocked",
+      "Ecosystem wallet operational"
+    ],
+    nextStepNumber: 8,
+    nextStepTitle: "Open Dashboard"
+  }
+};

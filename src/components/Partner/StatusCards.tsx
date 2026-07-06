@@ -13,10 +13,10 @@ import { statCardVariants } from "@/lib/animation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
+import ActiveStatusCard from "./ActiveStatusCard";
 
 const StatusCards = () => {
   const { userData } = useSelector((state: RootState) => state.user);
-  const isPending = userData && userData?.partnerStatus === "pending";
   const isRejected = userData && userData?.partnerStatus === "rejected";
   const router = useRouter();
 
@@ -32,56 +32,7 @@ const StatusCards = () => {
         <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/1 rounded-full blur-3xl group-hover:bg-white/3 transition-all duration-700" />
 
         {/* STATUS CARD  */}
-        <div className="hidden">
-          <div className="flex items-center justify-between mb-8">
-            <span className="text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300">
-              Current Block
-            </span>
-            <span className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-400/5 px-2.5 py-1 rounded-md border border-amber-400/10">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              Pending
-            </span>
-          </div>
-
-          <h3 className="text-3xl font-bold tracking-tight text-white mb-4 max-w-md">
-            Parnter under review 
-          </h3>
-          <p className="text-neutral-400 text-base leading-relaxed max-w-lg mb-6">
-            Connect your account securely to process weekly payouts, fuel
-            incentives, and performance-based ecosystem bonuses.
-          </p>
-
-          <div className="space-y-3 max-w-sm">
-            <div className="flex items-center gap-3 text-sm text-neutral-300">
-              <div className="w-1.5 h-1.5 bg-neutral-500 rounded-full" />
-              <span>Instant deposits configuration ready</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-neutral-300">
-              <div className="w-1.5 h-1.5 bg-neutral-500 rounded-full" />
-              <span>Encrypted with bank-grade AES-256 protocols</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between hidden">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-white text-black flex items-center justify-center font-bold">
-              3
-            </div>
-            <div>
-              <p className="text-xs text-neutral-400">NEXT ACTION</p>
-              <p className="text-sm font-semibold text-white">
-                Bank Authentication
-              </p>
-            </div>
-          </div>
-          <Button
-            rightIcon={<ArrowUpRight className="w-4 h-4" />}
-            className="bg-white hover:bg-neutral-100 text-black text-xs flex items-center gap-2 shadow-lg transition-colors duration-200"
-          >
-            Initiate Now
-          </Button>
-        </div>
+        <ActiveStatusCard userData={{steps: userData?.steps, videoKycStatus: userData?.videoKycStatus, videoKycRoomId: userData?.videoKycRoomId}} />
       </motion.div>
 
       <motion.div
