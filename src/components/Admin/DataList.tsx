@@ -86,11 +86,27 @@ const DataList = ({ data, type }: DataListProps) => {
             {type === "kyc" ? (
               <Button
                 size="sm"
-                disabled={item.videoKycStatus === "in_progress"}
-                onClick={() => {handleStartKyc(item._id); router.refresh();}}
                 className="bg-background hover:bg-neutral-100 text-black py-1 text-[12px] font-medium tracking-tight"
               >
-                <span>{item.videoKycStatus === "pending" ? "KYC" : "Join" }</span>
+                {item.videoKycStatus === "pending" && (
+                  <span
+                    onClick={() => {
+                      handleStartKyc(item._id);
+                      router.refresh();
+                    }}
+                  >
+                    KYC
+                  </span>
+                )}
+                {item.videoKycStatus === "in_progress" && (
+                  <span
+                    onClick={() =>
+                      router.push(`/video-kyc/${item.videoKycRoomId}`)
+                    }
+                  >
+                    Join
+                  </span>
+                )}
                 <ArrowUpRight className="w-4 h-4 text-black group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200 ease-out" />
               </Button>
             ) : (

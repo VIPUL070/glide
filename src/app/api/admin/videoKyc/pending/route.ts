@@ -17,7 +17,7 @@ export async function GET() {
         const partners = await User.find({
             role: "partner",
             videoKycStatus: { $in: ["pending", "in_progress"] }
-        }).select("name email _id videoKycStatus");
+        }).select("name email _id videoKycStatus videoKycRoomId");
 
         if (partners.length === 0) {
             return NextResponse.json(

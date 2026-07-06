@@ -24,7 +24,7 @@ function AdminDashboard() {
     rejectedPartners: 0,
   });
   const [partnerReviews, setPartnerReviews] = useState<ReviewData[]>([]);
-  const [pendingKyc, setPendingKyc] = useState([]);
+  const [pendingKyc, setPendingKyc] = useState<ReviewData[]>([]);
   const [vehicleReviews, setVehicleReviews] = useState([]);
 
   useEffect(() => {
