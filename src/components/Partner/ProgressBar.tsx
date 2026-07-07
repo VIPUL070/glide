@@ -22,9 +22,10 @@ const stepIcons: Record<
   8: Sparkles,
 };
 
-const ProgressBar = () => {
+const ProgressBar = ({handleOpen}: {handleOpen : () => void}) => {
   const { userData } = useSelector((state: RootState) => state.user);
-  const activeStep = userData ? userData.steps! + 1 : 0;
+  const reason = userData && userData.videoKycStatus === "approved"
+  const activeStep =  reason ? userData.steps! + 1 : 0;
   const router = useRouter();
 
   const getStepStatus = (id: number) => {
@@ -34,10 +35,15 @@ const ProgressBar = () => {
   };
 
   const gotoStep = (step: Step) => {
+    if(step.id === 6 && userData?.videoKycStatus === "approved" && activeStep === 6){
+      handleOpen();
+    }
+
     if (step.route && step.id <= activeStep) {
       router.push(step.route);
     }
   };
+
   return (
     <motion.div
       variants={onboardingContainerVariants}
@@ -82,7 +88,7 @@ const ProgressBar = () => {
                     <Check className="w-3 h-3 stroke-3" />
                   </div>
                 ) : status === "active" ? (
-                  <span className="text-sm  px-1.5 py-0.5 rounded bg-background/10 text-primary font-semibold border border-background/10">
+                  <span className="text-sm p-0.5 sm:px-1.5 sm:py-0.5 rounded bg-background/10 text-primary font-semibold border border-background/10">
                     ID: 0{step.id}
                   </span>
                 ) : (

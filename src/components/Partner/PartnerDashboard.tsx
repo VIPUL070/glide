@@ -4,13 +4,19 @@ import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import ProgressBar from "./ProgressBar";
 import StatusCards from "./StatusCards";
+import PricingModal from "./PricingModal";
+import { useState } from "react";
 
 function PartnerDashboard() {
   const { userData } = useSelector((state: RootState) => state.user);
   const activeStep = userData ? userData.steps! + 1 : 0;
+  const [isOpen , setIsOpen] = useState<boolean>(false);
 
   return (
     <div className="relative pt-[9vh] px-[2vw] min-h-dvh bg-foreground text-primary selection:bg-background/20 selection:text-primary antialiased overflow-x-hidden">
+
+      <PricingModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+
       <div className="absolute top-0 left-1/4 w-125 h-125 bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-40 right-1/4 w-150 h-150 bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
 
@@ -48,7 +54,7 @@ function PartnerDashboard() {
               </div>
             </div>
 
-            <ProgressBar />
+            <ProgressBar handleOpen={() => setIsOpen(true)}/>
           </div>
         </section>
 
