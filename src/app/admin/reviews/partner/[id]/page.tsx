@@ -54,6 +54,18 @@ const PartnerReview = () => {
     getPartnerDetails();
   }, [id]);
 
+    const handleApprove = async () => {
+        await axios.patch(`/api/admin/reviews/partner/${id}/approve`);
+        router.refresh();
+        router.push('/')
+    };
+  
+    const handleReject = async (reason:string) => {
+        await axios.patch(`/api/admin/reviews/partner/${id}/reject` , {rejectionReason : reason});
+        router.refresh();
+        router.push('/') 
+    };
+
   const globalStatus = partnerDetails?.partnerStatus;
   if (!partnerDetails || !vehicleDetails || !partnerDocs || !bankDetails)
     return null;
@@ -274,7 +286,7 @@ const PartnerReview = () => {
         </div>
       </div>
 
-      <Overlay overlayState={overlayState} handleOverlay={setOverlayState} />
+      <Overlay overlayState={overlayState} onClose={() => setOverlayState("idle")} onApprove={handleApprove} onReject={handleReject}/>
     </div>
   );
 };
