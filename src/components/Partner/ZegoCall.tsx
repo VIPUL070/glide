@@ -1,7 +1,7 @@
 "use client";
 import { RootState } from "@/redux/store";
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -13,24 +13,33 @@ import {
   VideoIcon,
   UserCheck,
   Radio,
+  CheckCircle,
+  XCircle,
+  PhoneOff,
 } from "lucide-react";
 import Button from "../ui/Button";
+import Spinner from "../ui/Spinner";
+import Overlay, { OverlayState } from "../Admin/Overlay";
+import axios from "axios";
 
 function ZegoCall() {
   const { userData } = useSelector((state: RootState) => state.user);
   const containerRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
-  const {roomId} = useParams();
+  const { roomId } = useParams();
 
   const [joined, setJoined] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [permissionError, setPermissionError] = useState<string | null>(null);
+  const [overlayState, setOverlayState] = useState<OverlayState>("idle");
+  const router = useRouter();
+  const [loading, setLoading] = useState<boolean>();
 
   useEffect(() => {
     if (joined) return;
-    let localStream: MediaStream
+    let localStream: MediaStream;
 
     const initHardware = async () => {
       try {
@@ -39,15 +48,15 @@ function ZegoCall() {
           audio: true,
         });
 
-          setStream(localStream);
-          if (previewRef.current) {
-            previewRef.current.srcObject = localStream;
-          }
+        setStream(localStream);
+        if (previewRef.current) {
+          previewRef.current.srcObject = localStream;
+        }
       } catch (error) {
         console.error("Hardware access denied:", error);
-          setPermissionError(
-            "Camera or Microphone access was denied. Please check your system settings."
-          );
+        setPermissionError(
+          "Camera or Microphone access was denied. Please check your system settings."
+        );
       }
     };
 
@@ -75,10 +84,13 @@ function ZegoCall() {
   };
 
   const startCall = async () => {
+    if (loading) return;
     if (!containerRef.current) return null;
 
     if (!userData) return null;
     if (!roomId) return null;
+
+    setLoading(true);
     const displayName =
       userData.role === "admin" ? "Admin" : `${userData.name}`;
 
@@ -107,47 +119,120 @@ function ZegoCall() {
       setJoined(true);
     } catch (error) {
       console.error("Failed to start Zego call:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleApprove = async () => {
+    await axios.patch(`/api/admin/videoKyc/complete` , {
+      roomId,
+      action: "approved",
+      reason: ""
+    });
+    router.refresh();
+    router.push("/");
+  };
+
+  const handleReject = async (reason: string) => {
+    await axios.patch(`/api/admin/videoKyc/complete` , {
+      roomId,
+      action: "rejected",
+      reason: reason
+
+    });
+    router.refresh();
+    router.push("/");
   };
 
   return (
     <div className="min-h-screen w-full bg-[#09090b] text-primary flex flex-col selection:bg-zinc-800 antialiased">
 
-        <header className="sticky top-0 z-50 w-full border-b border-zinc-800/60 bg-zinc-950/40 backdrop-blur-xl transition-colors duration-300">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 shadow-inner">
-                <ShieldCheck className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div>
-                <span className="text-sm font-medium tracking-tight block">
-                  Secure Identity Verification
-                </span>
-                <span className="text-[11px] text-primary/70 block uppercase tracking-widest">
-                  Session Live
-                </span>
-              </div>
-            </div>
+      <header className="sticky top-0 z-50 w-full border-b border-zinc-800/60 bg-zinc-950/40 backdrop-blur-xl transition-colors duration-300">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-2">
 
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-medium">
-                  {userData?.name || "Loading..."}
-                </span>
-                <span className="text-[11px] text-primary/70 capitalize">
-                  {userData?.role || "Verification Candidate"}
-                </span>
-              </div>
-              <div className="h-8 w-8 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center overflow-hidden">
-                <UserCheck className="h-4 w-4" />
-              </div>
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1 sm:flex-initial">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 shadow-inner">
+              <ShieldCheck className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div className="min-w-0 hidden sm:block">
+              <span className="text-sm font-medium tracking-tight block truncate max-w-35 md:max-w-none">
+                Secure Identity Verification
+              </span>
+              <span className="text-[11px] text-primary/70 block uppercase tracking-widest truncate">
+                Session Live
+              </span>
             </div>
           </div>
-        </header>
 
-      <main className="flex-1 flex flex-col justify-center items-center p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto"> 
+          {joined && (
+            <div className="flex items-center justify-center gap-1.5 sm:gap-3 shrink-0 mx-auto sm:mx-0">
+              {userData?.role === "admin" && (
+                <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+                  <Button
+                    leftIcon={
+                      <CheckCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
+                    }
+                    disabled={
+                      userData.partnerStatus === "approved" ||
+                      userData.partnerStatus === "rejected"
+                    }
+                    onClick={() => setOverlayState("approve")}
+                    className="bg-background hover:bg-white transition-all duration-300 text-black text-xs px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center justify-center gap-1"
+                    title="Approve Verification"
+                  >
+                    <span className="hidden md:inline">Approve</span>
+                  </Button>
+                  <Button
+                    leftIcon={
+                      <XCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
+                    }
+                    disabled={
+                      userData.partnerStatus === "approved" ||
+                      userData.partnerStatus === "rejected"
+                    }
+                    onClick={() => setOverlayState("reject")}
+                    className="bg-background hover:bg-white transition-all duration-300 text-black text-xs px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center justify-center gap-1"
+                    title="Reject Verification"
+                  >
+                    <span className="hidden md:inline">Reject</span>
+                  </Button>
+                </div>
+              )}
+              <Button
+                leftIcon={
+                  <PhoneOff className="h-4 w-4 transition-transform group-hover:scale-110" />
+                }
+                className="bg-rose-500 hover:bg-rose-600 transition-all duration-300 text-primary text-xs px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center justify-center gap-1"
+                title="End Call"
+              >
+                <span className="hidden md:inline">End Call</span>
+              </Button>
+            </div>
+          )}
 
-        <div ref={containerRef} className={`absolute inset-0 ${joined ? "block" : "hidden"}`}/>
+          <div className="flex items-center justify-end gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
+            <div className="hidden md:flex flex-col text-right min-w-0">
+              <span className="text-sm font-medium truncate max-w-30">
+                {userData?.name || "Loading..."}
+              </span>
+              <span className="text-[11px] text-primary/70 capitalize truncate">
+                {userData?.role || "Verification Candidate"}
+              </span>
+            </div>
+            <div className="h-8 w-8 shrink-0 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center overflow-hidden">
+              <UserCheck className="h-4 w-4" />
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col justify-center items-center p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <div
+          ref={containerRef}
+          className={`absolute inset-0 ${joined ? "block" : "hidden"}`}
+        />
 
         {!joined && (
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center lg:py-6">
@@ -288,12 +373,14 @@ function ZegoCall() {
                 </div>
 
                 <Button
-                  type="button"
-                  leftIcon={<VideoIcon className="h-4 w-4 transition-transform group-hover:scale-110" />}
+                  leftIcon={
+                    <VideoIcon className="h-4 w-4 transition-transform group-hover:scale-110" />
+                  }
                   onClick={startCall}
+                  disabled={loading}
                   className="w-full bg-background hover:bg-white transition-all duration-300 text-black"
                 >
-                  Join Call
+                  {loading ? <Spinner /> : "Join Call"}
                 </Button>
               </div>
 
@@ -306,6 +393,18 @@ function ZegoCall() {
           </div>
         )}
       </main>
+
+      <Overlay
+        overlayState={overlayState}
+        onClose={() => setOverlayState("idle")}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        approveTitle="Verify Customer Documents"
+        approveDescription="Are you sure you want to approve this user's identity status globally?"
+        rejectTitle="Deny Registration"
+        rejectDescription="Select reasons or elaborate on why this applicant's documentation failed."
+        rejectPlaceholder="Incorrect ID layout, blurry text..."
+      />
     </div>
   );
 }
