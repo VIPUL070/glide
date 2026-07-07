@@ -25,7 +25,7 @@ function AdminCards({
       initial="hidden"
       animate="visible"
       whileHover={{ y: -2 }}
-      className="bg-foreground border border-neutral-200/30 rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between group cursor-pointer text-primary relative overflow-hidden"
+      className="bg-foreground  rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between group cursor-pointer text-primary relative overflow-hidden"
     >
       <div className={`absolute top-0 left-0 right-0 h-0.75 ${topBarColor}`} />
       

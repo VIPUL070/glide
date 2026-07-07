@@ -85,6 +85,7 @@ const DataList = ({ data, type }: DataListProps) => {
 
             {type === "kyc" ? (
               <Button
+                disabled={item.videoKycStatus === "approved" || item.videoKycStatus === "rejected"}
                 size="sm"
                 className="bg-background hover:bg-neutral-100 text-black py-1 text-[12px] font-medium tracking-tight"
               >

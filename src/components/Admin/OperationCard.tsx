@@ -20,7 +20,7 @@ function OperationCard({ title,description,icon,data ,type}: OperationCardProps)
       variants={itemVariants}
       initial="hidden"
       animate="visible"
-      className="bg-foreground text-primary border border-neutral-200/30 rounded-2xl p-5 shadow-[0_4px_12px_rgba(0,0,0,0.01)] flex flex-col justify-between min-h-75"
+      className="bg-foreground text-primary rounded-2xl p-5 shadow-[0_4px_12px_rgba(0,0,0,0.01)] flex flex-col justify-between min-h-75"
     >
       <div>
         {/* Card Header */}
