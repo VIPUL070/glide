@@ -14,11 +14,35 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
 import ActiveStatusCard from "./ActiveStatusCard";
+import { useState } from "react";
+import axios, { isAxiosError } from "axios";
+import Spinner from "../ui/Spinner";
 
 const StatusCards = () => {
   const { userData } = useSelector((state: RootState) => state.user);
   const isRejected = userData && userData?.partnerStatus === "rejected";
+  const isKycRejected = userData && userData?.videoKycStatus === "rejected";
+  const [loading, setLoading] = useState<boolean>(false);
+
   const router = useRouter();
+
+  const handleRetryKyc = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      await axios.patch(`/api/partner/videoKyc/retry`);
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.log(error.response?.data?.message ?? "Something went wrong!");
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 text-primary">
@@ -32,7 +56,13 @@ const StatusCards = () => {
         <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/1 rounded-full blur-3xl group-hover:bg-white/3 transition-all duration-700" />
 
         {/* STATUS CARD  */}
-        <ActiveStatusCard userData={{steps: userData?.steps, videoKycStatus: userData?.videoKycStatus, videoKycRoomId: userData?.videoKycRoomId}} />
+        <ActiveStatusCard
+          userData={{
+            steps: userData?.steps,
+            videoKycStatus: userData?.videoKycStatus,
+            videoKycRoomId: userData?.videoKycRoomId,
+          }}
+        />
       </motion.div>
 
       <motion.div
@@ -81,26 +111,52 @@ const StatusCards = () => {
           </p>
           <h4
             className={`text-base font-medium mb-4 ${
-              isRejected ? "text-rose-400" : ""
+              isRejected || isKycRejected ? "text-rose-400" : ""
             }`}
           >
-            {isRejected ? "Partner Rejected" : "Review Status"}
+            {isRejected && "Partner Rejected"}
+            {isKycRejected && "KYC Rejected"}
           </h4>
-          {isRejected ? (
-            <div className="flex items-center flex-col gap-10 justify-between p-2 rounded-lg bg-white/2 border border-white/3">
+          {isRejected || isKycRejected ? (
+            <div className="flex items-center flex-col gap-4 justify-between p-2 rounded-lg bg-white/2 border border-white/3">
               <span className="text-rose-500 text-md">Rejection Reason</span>
-              <span className="text-xs text-rose-500 ">{userData?.rejectionReason}</span>
+              <span className="text-xs text-rose-500 ">
+                {isRejected && userData?.rejectionReason}{" "}
+                {isKycRejected && userData?.kycRejectionReason}
+              </span>
             </div>
           ) : (
             <div className="flex items-center flex-col gap-10 justify-between p-2 rounded-lg bg-white/2 border border-white/3">
-              <span className="text-primary text-md"><CheckCircle2 /></span>
-              <span className="text-xs text-primary/60">Partner under onboarding......</span>
+              <span className="text-primary text-md">
+                <CheckCircle2 />
+              </span>
+              <span className="text-xs text-primary/60">
+                Partner under onboarding......
+              </span>
             </div>
           )}
-          
         </div>
         {isRejected ? (
-          <Button onClick={() => router.push('/partner/onboarding/vehicle')} rightIcon={<ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"/>} className="bg-background hover:bg-background text-xs text-black border border-white/8 transition-all group">Check & Update</Button>
+          <Button
+            onClick={() => router.push("/partner/onboarding/vehicle")}
+            rightIcon={
+              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            }
+            className="bg-background hover:bg-background text-xs text-black border border-white/8 transition-all group"
+          >
+            Check & Update
+          </Button>
+        ) : isKycRejected ? (
+          <Button
+            onClick={handleRetryKyc}
+            disabled={loading}
+            rightIcon={
+              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            }
+            className="bg-background hover:bg-background text-xs text-black border border-white/8 transition-all group"
+          >
+            {loading ? <Spinner /> : "Retry KYC"}
+          </Button>
         ) : (
           <div className="text-xs text-primary/60 mt-4">
             Recheck your submitted payloads.

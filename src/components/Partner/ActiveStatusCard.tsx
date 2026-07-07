@@ -120,15 +120,28 @@ function ActiveStatusCard({ userData }: { userData: UserData }) {
         </div>
         {userData.steps === 3 || isVideoKycPending ? (
           <></>
-        ) : (
+        ) : isVideoKycInProgress ? (
           <Button
             onClick={() => gotoStep(content)}
             rightIcon={<ArrowUpRight className="w-4 h-4" />}
+            disabled={userData.videoKycStatus === "approved" || userData.videoKycStatus === "rejected"}
             className="bg-white hover:bg-neutral-100 text-black text-xs flex items-center gap-2 shadow-lg transition-colors duration-200"
           >
-            {isVideoKycInProgress ? "Join Now" : "Initiate Now"}
+            Join Now
           </Button>
-        )}
+        ) :
+        (
+          <Button
+            onClick={() => gotoStep(content)}
+            rightIcon={<ArrowUpRight className="w-4 h-4" />}
+            disabled={userData.videoKycStatus === "rejected"}
+            className="bg-white hover:bg-neutral-100 text-black text-xs flex items-center gap-2 shadow-lg transition-colors duration-200"
+          >
+            Initiate Now
+          </Button>
+        )
+        
+        }
       </div>
     </>
   );
