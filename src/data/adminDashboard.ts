@@ -5,6 +5,12 @@ export interface DashboardStats {
   rejectedPartners: number;
 }
 
+export type Owner = {
+  name:string;
+  email:string;
+  _id:string;
+}
+
 export interface ReviewData {
   name:string;
   email:string;
@@ -12,4 +18,5 @@ export interface ReviewData {
   type?:string;
   videoKycStatus?: string;
   videoKycRoomId?: string;
+  owner?: Owner | null;
 }

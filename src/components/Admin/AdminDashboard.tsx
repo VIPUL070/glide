@@ -25,7 +25,7 @@ function AdminDashboard() {
   });
   const [partnerReviews, setPartnerReviews] = useState<ReviewData[]>([]);
   const [pendingKyc, setPendingKyc] = useState<ReviewData[]>([]);
-  const [vehicleReviews, setVehicleReviews] = useState([]);
+  const [vehicleReviews, setVehicleReviews] = useState<ReviewData[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -36,6 +36,7 @@ function AdminDashboard() {
         const { data } = await axios.get("/api/admin/dashboard", { signal });
         setStats(data);
         setPartnerReviews(data.pendingPartnerReview);
+        setVehicleReviews(data.pendingVehicles)
       } catch (error) {
         if (axios.isCancel(error)) return;
         console.error("Error loading dashboard metrics:", error);
@@ -47,10 +48,11 @@ function AdminDashboard() {
         const { data } = await axios.get("/api/admin/videoKyc/pending", {
           signal,
         });
-        setPendingKyc(data.partners)
+        if(data){
+          setPendingKyc(data.partners)
+        }
       } catch (error) {
         if (axios.isCancel(error)) return;
-        console.error("Error loading KYC metrics:", error);
       }
     };
 

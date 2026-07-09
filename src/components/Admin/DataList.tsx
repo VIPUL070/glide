@@ -15,7 +15,7 @@ interface DataListProps {
 const DataList = ({ data, type }: DataListProps) => {
   const router = useRouter();
   
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
     if (!name) return "";
     return name
       .split(" ")
@@ -59,6 +59,7 @@ const DataList = ({ data, type }: DataListProps) => {
     <div className="flex-1 flex flex-col justify-between overflow-hidden mt-2">
       <div className="space-y-2 max-h-43.75 overflow-y-auto pr-1 scrollbar-none">
         {data.slice(0, 3).map((item, index) => (
+          
           <motion.div
             key={item._id || index}
             variants={itemVariants}
@@ -68,17 +69,17 @@ const DataList = ({ data, type }: DataListProps) => {
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center border border-neutral-200/30 text-secondary font-semibold text-[14px] tracking-wider shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
-                {getInitials(item.name) || (
+                {getInitials(item.name) || getInitials(item.owner?.name) || (
                   <User className="w-3.5 h-3.5 text-secondary/60" />
                 )}
               </div>
 
               <div className="min-w-0 flex flex-col">
                 <span className="text-xs font-medium text-primary truncate uppercase tracking-tight">
-                  {item.name}
+                  {item.name || item?.owner?.name}
                 </span>
                 <span className="text-[11px] text-primary/60 truncate max-w-30 sm:max-w-50 md:max-w-60 lg:max-w-26.25 xl:max-w-40">
-                  {item.email}
+                  {item.email || item?.owner?.email}
                 </span>
               </div>
             </div>
