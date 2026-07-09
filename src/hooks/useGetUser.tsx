@@ -1,5 +1,6 @@
 "use client";
 import { setUserData } from "@/redux/userSlice";
+import { setVehicles } from "@/redux/vehicleSlice";
 import axios, { isAxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -18,24 +19,36 @@ export interface UserData {
 export const useGetUser = ({ enabled }: { enabled: boolean }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false); 
   const [error, setError] = useState<string | null>(null);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (!enabled) return;
 
     let isMounted = true;
-    const getUser = async () => {
+    const getUserAndVehicle = async () => {
       try {
         setIsLoading(true);
-        const { data } = await axios.get<UserData>('/api/user/me');
+        
+        const [userRes, vehicleRes] = await Promise.all([
+          axios.get<UserData>('/api/user/me'),
+          axios.get('/api/partner/onboarding/vehicle').catch(err => {
+            console.log("Vehicle not found or onboarding incomplete yet:", err.message);
+            return { data: null }; 
+          })
+        ]);
         
         if (isMounted) {
-          dispatch(setUserData(data))
+          dispatch(setUserData(userRes.data));
+          if (vehicleRes.data) {
+            const actualVehicleData = vehicleRes.data.vehicle ? vehicleRes.data.vehicle : vehicleRes.data;
+            dispatch(setVehicles(actualVehicleData));
+          }
+
           setError(null);
         }
       } catch (err) {
         if (isAxiosError(err) && isMounted) {
-          setError(err.response?.data?.message || "Failed to fetch user");
+          setError(err.response?.data?.message || "Failed to fetch dashboard data");
         }
       } finally {
         if (isMounted) {
@@ -44,7 +57,7 @@ export const useGetUser = ({ enabled }: { enabled: boolean }) => {
       }
     };
 
-    getUser();
+    getUserAndVehicle();
 
     return () => {
       isMounted = false;

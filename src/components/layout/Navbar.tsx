@@ -19,6 +19,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import ProfileMenu from "./ProfileMenu";
 import { signOut } from "next-auth/react";
 import { setUserData } from "@/redux/userSlice";
+import { setVehicles } from "@/redux/vehicleSlice";
 
 const Navbar = () => {
   const { scrollY } = useScroll();
@@ -50,6 +51,7 @@ const Navbar = () => {
   const handleSignOut = async () => {
     try {
       dispatch(setUserData(null));
+      dispatch(setVehicles(null));
       await signOut({ callbackUrl: "/" });
     } catch (error) {
       console.error("Sign out processing exception:", error);
