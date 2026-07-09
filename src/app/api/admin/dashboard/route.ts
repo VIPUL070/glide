@@ -50,8 +50,16 @@ export async function GET() {
             type: partnerVehicleType.get(String(partner._id)) || "N/A"
         }));
 
+        const pendingVehicles = await Vehicle.find({
+            status: "pending"
+        }).populate("owner", "name email _id")
+
+        if(!pendingVehicles){
+            return null;
+        }
+
         return NextResponse.json(
-            { message: "Request Details Fetched Successfully", totalPartners, approvedPartners, pendingPartners, rejectedPartners, pendingPartnerReview },
+            { message: "Request Details Fetched Successfully", totalPartners, approvedPartners, pendingPartners, rejectedPartners, pendingPartnerReview , pendingVehicles },
             { status: 200 }
         );
 

@@ -19,6 +19,9 @@ import {
   inputRowVariants,
 } from "@/lib/animation";
 import Image from "next/image";
+import axios, { isAxiosError } from "axios";
+import Spinner from "../ui/Spinner";
+import FormError from "../ui/FormError";
 
 interface PricingSetupModalProps {
   isOpen: boolean;
@@ -29,10 +32,12 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
   const [baseFare, setBaseFare] = useState("");
   const [waitingCharge, setWaitingCharge] = useState("");
   const [pricePerKM, setPricePerKM] = useState("");
-
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,18 +48,32 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
     previewUrl !== null;
 
   useEffect(() => {
-    if (!isOpen) {
-      setBaseFare("");
-      setWaitingCharge("");
-      setPricePerKM("");
-      setImageFile(null);
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(null);
+    const getPricingData = async () => {
+      try {
+        const { data } = await axios.get("/api/partner/onboarding/pricing", {
+          signal,
+        });
+
+        if (data) {
+          setBaseFare(data.vehicle.baseFare.toString());
+          setWaitingCharge(data.vehicle.waitingCharge.toString());
+          setPricePerKM(data.vehicle.pricePerKM.toString());
+          setPreviewUrl(data.vehicle.imageUrl);
+        }
+      } catch (error) {
+        if (axios.isCancel(error)) return;
+        console.error("Error loading dashboard metrics:", error);
       }
-    }
-  }, [isOpen, previewUrl]);
+    };
+    getPricingData();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   const handleFileChange = (file: File | undefined) => {
     if (!file) return;
@@ -65,6 +84,15 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
 
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleDiscard = () => {
+    setBaseFare("");
+    setWaitingCharge("");
+    setPricePerKM("");
+    setPreviewUrl("");
+    setImageFile(null);
+    onClose();
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -85,9 +113,36 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || loading) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("baseFare", baseFare);
+      formData.append("waitingCharge", waitingCharge);
+      formData.append("pricePerKM", pricePerKM);
+
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      await axios.patch("/api/partner/onboarding/pricing", formData);
+      onClose();
+      window.location.reload();
+    } catch (error) {
+      if (isAxiosError(error)) {
+        setError(error.response?.data?.message || "Something went wrong");
+      } else if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -110,7 +165,6 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
             exit="exit"
             className="relative w-full max-w-4xl max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] md:max-h-none bg-background border border-secondary/10 rounded-xl shadow-2xl shadow-secondary/5 overflow-y-auto scrollbar-none md:overflow-hidden flex flex-col z-10 text-secondary antialiased"
           >
-
             <div className="h-0.5 w-full shrink-0 bg-linear-to-r from-secondary/10 via-secondary/40 to-secondary/10" />
 
             <button
@@ -121,28 +175,24 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
               <X className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
             </button>
 
-
             <form
               onSubmit={handleSubmit}
               className="p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-8"
             >
-
               <div className="space-y-1.5 max-w-xl pr-8 sm:pr-0">
                 <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-secondary/70 px-2 py-0.5 rounded bg-secondary/5 border border-secondary/5">
                   <Sparkles className="h-3 w-3" /> Step 6 • PricingSetup
                 </div>
                 <h2 className="text-lg sm:text-2xl md:text-3xl font-medium tracking-tighter uppercase leading-tight">
-                  Configure Vehicle <br className="hidden sm:inline" /> Pricing & Metrics
+                  Configure Vehicle <br className="hidden sm:inline" /> Pricing
+                  & Metrics
                 </h2>
                 <p className="text-xs sm:text-sm text-secondary/60 leading-relaxed hidden xs:block">
                   Establish the base fare and rate modifiers for this tier.
                 </p>
               </div>
 
-
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 items-start">
-                
-
                 <div className="md:col-span-5 space-y-1.5 w-full">
                   <label className="text-xs font-medium tracking-wide text-secondary uppercase block">
                     Upload Vehicle Asset
@@ -188,7 +238,6 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
                             </span>
                           </div>
                         </div>
-
 
                         <div className="absolute bottom-3 left-3 right-3 bg-background/90 backdrop-blur border border-secondary/10 px-2.5 py-1 rounded-lg hidden sm:flex items-center justify-between text-left shadow-sm">
                           <div className="flex items-center gap-2 truncate">
@@ -277,20 +326,25 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
                       autoComplete="off"
                     />
                   </motion.div>
+
+                  <AnimatePresence>
+                    <FormError message={error} />
+                  </AnimatePresence>
                 </motion.div>
               </div>
 
-
               <div className="pt-4 sm:pt-6 border-t border-secondary/10 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
                 <p className="text-[11px] sm:text-[13px] text-secondary/70 leading-tight text-center sm:text-left max-w-sm tracking-normal">
-                  Rate adjustments take effect instantly across active partner routing globally upon verification completion.
+                  Rate adjustments take effect instantly across active partner
+                  routing globally upon verification completion.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto justify-end">
                   <Button
                     size="sm"
-                    onClick={onClose}
+                    onClick={handleDiscard}
                     motionEffect="slide"
+                    disabled={loading}
                     className="sm:w-auto order-2 sm:order-1 bg-rose-700 hover:bg-rose-700 text-primary text-xs"
                   >
                     Discard
@@ -300,7 +354,7 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
                     type="submit"
                     variant="primary"
                     size="sm"
-                    disabled={!isFormValid}
+                    disabled={!isFormValid || loading}
                     motionEffect="slide"
                     className={`
                       sm:w-auto transition-all duration-300 order-1 sm:order-2 text-xs
@@ -311,7 +365,7 @@ function PricingModal({ isOpen, onClose }: PricingSetupModalProps) {
                       }
                     `}
                   >
-                    Save
+                    {loading ? <Spinner /> : "Save"}
                   </Button>
                 </div>
               </div>
