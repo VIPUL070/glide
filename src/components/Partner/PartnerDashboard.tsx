@@ -58,7 +58,7 @@ function PartnerDashboard() {
           </div>
         </section>
 
-        <StatusCards />
+        <StatusCards onOpen={() => setIsOpen(true)}/>
       </main>
     </div>
   );

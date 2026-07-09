@@ -35,7 +35,7 @@ const ProgressBar = ({handleOpen}: {handleOpen : () => void}) => {
   };
 
   const gotoStep = (step: Step) => {
-    if(step.id === 6 && userData?.videoKycStatus === "approved" && activeStep === 6){
+    if(step.id === 6 && userData?.videoKycStatus === "approved"){
       handleOpen();
     }
 

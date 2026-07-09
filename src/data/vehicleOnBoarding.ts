@@ -120,8 +120,8 @@ export interface CardContent {
   heading: string;
   description: string;
   features: string[];
-  nextStepNumber: number;
-  nextStepTitle: string;
+  nextStepNumber?: number;
+  nextStepTitle?: string;
   route?:string;
 }
 
@@ -211,10 +211,10 @@ export const STEP_CARD_CONTENT: Record<number, CardContent> = {
     heading: "Welcome Aboard Partner!",
     description: "Your partner profile is fully activated. You are now officially integrated into the platform network.",
     features: [
-      "Live request matching unlocked",
+      "Live Bookings unlocked",
       "Ecosystem wallet operational"
     ],
-    nextStepNumber: 8,
-    nextStepTitle: "Open Dashboard"
+    nextStepTitle: "Go to Bookings",
+    route: `/`
   }
 };

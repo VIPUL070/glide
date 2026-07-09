@@ -1,5 +1,5 @@
 "use client";
-import { CardContent, STEP_CARD_CONTENT, STEPS } from "@/data/vehicleOnBoarding";
+import { CardContent, STEP_CARD_CONTENT} from "@/data/vehicleOnBoarding";
 import Button from "../ui/Button";
 import { ArrowUpRight } from "lucide-react";
 import { VideoKycStatus } from "@/models/User.model";
@@ -15,7 +15,6 @@ function ActiveStatusCard({ userData }: { userData: UserData }) {
   const currentStepId = userData?.steps || 0;
   const isVideoKycInProgress = userData?.videoKycStatus === "in_progress";
   const isVideoKycPending = userData?.steps === 4 && userData?.videoKycStatus === "pending";
-  const stepMeta = STEPS.find((s) => s.id === currentStepId);
   const router = useRouter();
 
   const gotoStep = (content: CardContent) => {
@@ -23,19 +22,6 @@ function ActiveStatusCard({ userData }: { userData: UserData }) {
         router.push(content.route)
     }
   }
-
-  const defaultContent = {
-    badge: stepMeta?.title || "",
-    heading: `${stepMeta?.title || "Partner"} Setup`,
-    description:
-      "Complete your configuration requirements to take your profile live.",
-    features: [
-      "Configuration parameters ready",
-      "Encrypted with bank-grade protocols",
-    ],
-    nextStepNumber: currentStepId,
-    nextStepTitle: "Next Setup Phase",
-  };
 
   const content = isVideoKycInProgress
   ? {
@@ -62,7 +48,7 @@ function ActiveStatusCard({ userData }: { userData: UserData }) {
       nextStepNumber: 6,
       nextStepTitle: "Pricing Setup",
     }
-  : STEP_CARD_CONTENT[currentStepId] || defaultContent;
+  : STEP_CARD_CONTENT[currentStepId] || STEP_CARD_CONTENT[7];
 
   return (
     <>
@@ -73,7 +59,7 @@ function ActiveStatusCard({ userData }: { userData: UserData }) {
           </span>
           <span
             className={`flex items-center gap-1.5 text-xs ${
-              isVideoKycInProgress
+              isVideoKycInProgress || userData?.steps === 8
                 ? "bg-emerald-400/5 text-emerald-400"
                 : "bg-amber-400/5 text-amber-400 "
             } px-2.5 py-1 rounded-md border border-amber-400/10"`}
@@ -118,7 +104,7 @@ function ActiveStatusCard({ userData }: { userData: UserData }) {
             </p>
           </div>
         </div>
-        {userData.steps === 3 || isVideoKycPending ? (
+        {userData.steps === 3 || isVideoKycPending || userData.steps === 6 ? (
           <></>
         ) : isVideoKycInProgress ? (
           <Button
@@ -137,7 +123,7 @@ function ActiveStatusCard({ userData }: { userData: UserData }) {
             disabled={userData.videoKycStatus === "rejected"}
             className="bg-white hover:bg-neutral-100 text-black text-xs flex items-center gap-2 shadow-lg transition-colors duration-200"
           >
-            Initiate Now
+            {userData.steps === 7 || userData.steps === 8 ? "Bookings" : "Initiate Now"}
           </Button>
         )
         
