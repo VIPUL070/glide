@@ -76,7 +76,7 @@ const userSchema = new mongoose.Schema<IUser>({
     },
     videoKycRoomId: {
         type: String,
-        unique: true
+        default:null
     },
     kycRejectionReason: {
         type: String,

@@ -72,8 +72,9 @@ const Navbar = () => {
       >
         <div className="hidden lg:grid relative w-full flex-1 self-stretch grid-cols-8">
           <div className="col-span-1 border-r-[0.5px] border-white/30 flex items-center justify-end">
-            <a
-              href=""
+          
+            <Link
+              href="/"
               className="relative w-30 h-[9vh] flex items-center justify-end bg-transparent"
             >
               <Image
@@ -83,7 +84,7 @@ const Navbar = () => {
                 className="object-cover object-right"
                 priority
               />
-            </a>
+            </Link>
           </div>
 
           {userData?.role !== "admin" && (
@@ -165,9 +166,9 @@ const Navbar = () => {
                 </svg>
               </button>
 
-              <a
-                href=""
-                className="relative w-24 h-[5vh] sm:w-28 sm:h-[6vh] flex items-center bg-transparent"
+              <Link
+                href="/"
+                className="relative w-24 h-[10vh] sm:w-28 sm:h-[6vh] flex items-center bg-transparent"
               >
                 <Image
                   src="/nav-logo.svg"
@@ -176,12 +177,12 @@ const Navbar = () => {
                   className="object-contain object-left"
                   priority
                 />
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="flex items-center gap-3 md:gap-5">
-              <a
-                href=""
+              <Link
+                href="/"
                 className="relative w-24 h-[5vh] sm:w-28 sm:h-[6vh] flex items-center bg-transparent"
               >
                 <Image
@@ -191,15 +192,15 @@ const Navbar = () => {
                   className="object-contain object-left"
                   priority
                 />
-              </a>
+              </Link>
             </div>
           )}
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-4">
             <button
               onClick={() => setIsSearchOpen(true)}
               aria-label="Search"
-              className="p-2 text-primary hover:opacity-70 transition-opacity focus:outline-none flex items-center justify-center cursor-pointer"
+              className="p-1 text-primary hover:opacity-70 transition-opacity focus:outline-none flex items-center justify-center cursor-pointer"
             >
               <svg
                 className="w-5 h-5 sm:w-6 sm:h-6"
@@ -227,7 +228,7 @@ const Navbar = () => {
                 variant="transparent"
                 size="sm"
                 onClick={() => setAuthOpen(true)}
-                className="text-[12px] sm:text-[13px] tracking-tighter uppercase px-2 sm:px-3"
+                className="text-[14px] sm:text-[13px] tracking-tighter uppercase pr-2 sm:px-3"
               >
                 Log In
               </Button>
