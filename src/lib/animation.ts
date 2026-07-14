@@ -97,52 +97,52 @@ export const iconVariants: Variants = {
 };
 
 export const textFadeVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, duration: 0.35, ease: [0.23, 1, 0.32, 1] },
-  }),
+    hidden: { opacity: 0, y: 12 },
+    visible: (i: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.08, duration: 0.35, ease: [0.23, 1, 0.32, 1] },
+    }),
 };
 
 export const statCardVariants: Variants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-  }),
+    hidden: { opacity: 0, y: 15 },
+    visible: (i: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+    }),
 };
 
 export const springs = {
-  tight: { type: "spring" as const, stiffness: 450, damping: 32 },
-  fluid: { type: "spring" as const, stiffness: 300, damping: 28 },
-  slow: { type: "spring" as const, stiffness: 80, damping: 15 },
+    tight: { type: "spring" as const, stiffness: 450, damping: 32 },
+    fluid: { type: "spring" as const, stiffness: 300, damping: 28 },
+    slow: { type: "spring" as const, stiffness: 80, damping: 15 },
 };
 
 export const onboardingContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
-  },
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+    },
 };
 
 export const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: springs.fluid,
-  },
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: springs.fluid,
+    },
 };
 
 export const docsCardVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: springs.fluid },
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: springs.fluid },
 };
 
 export const inputRowVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: springs.fluid },
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0, transition: springs.fluid },
 };

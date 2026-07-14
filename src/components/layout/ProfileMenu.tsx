@@ -75,6 +75,7 @@ export const ProfileMenu = ({
                 x: 3,
                 backgroundColor: "rgba(255, 255, 255, 0.05)",
               }}
+              onClick={() => router.push('/user/profile')}
               className="flex items-center justify-between px-4 py-2.5 text-[12px] tracking-wider uppercase font-medium cursor-pointer text-primary/90 hover:text-primary transition-colors duration-150"
             >
               <span>View Profile</span>
