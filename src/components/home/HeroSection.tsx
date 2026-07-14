@@ -47,7 +47,7 @@ const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-primary/70 text-[0.9rem] tracking-tight max-w-sm"
+          className="text-primary/80 text-[0.9rem] tracking-tight max-w-sm"
         >
           From daily rides to heavy transport. All in one premium platform.
         </motion.p>
@@ -56,7 +56,7 @@ const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
           variants={heroContainerVariants}
           initial="hidden"
           animate="visible"
-          className="bg-neutral-900/40 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 rounded-xl w-full max-w-sm h-16 px-4 flex items-center justify-between gap-2 mt-2"
+          className="bg-neutral-900/40 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 rounded-xl w-full max-w-xs h-16 px-4 flex items-center justify-between gap-2 mt-2"
         >
           {[
             { Icon: Bike, label: "Bike" },
@@ -88,7 +88,7 @@ const HeroSection = ({ onAuthRequired }: { onAuthRequired: () => void }) => {
             whileTap={{ scale: 0.98 }}
             onClick={handleBookingTransition}
             size="lg"
-            className="rounded-xl px-8 shadow-lg shadow-black/20 hover:shadow-xl transition-all"
+            className="rounded-xl px-2 sm:px-8 shadow-lg shadow-black/20 hover:shadow-xl transition-all"
           >
             Book now
           </Button>
