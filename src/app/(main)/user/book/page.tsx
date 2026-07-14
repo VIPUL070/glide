@@ -9,16 +9,19 @@ import {
   Navigation,
   LocateFixed,
   MapPin,
+  ArrowLeft,
 } from "lucide-react";
 import {
   heroContainerVariants,
   inputRowVariants,
   itemVariants,
+  springs,
 } from "@/lib/animation";
 import InputField from "@/components/ui/InputField";
 import Button from "@/components/ui/Button";
 import { Suggestions, VEHICLE_OPTIONS, VehicleType } from "@/data/booking";
 import axios, { isAxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 function BookingPage() {
   const [pickup, setPickup] = useState("");
@@ -32,18 +35,24 @@ function BookingPage() {
   const [addressSuggestion, setAddressSuggestions] = useState<Suggestions[]>(
     []
   );
-  const [dropSuggestions, setDropSuggestions] = useState<Suggestions[]>(
-    []
-  );
+  const [dropSuggestions, setDropSuggestions] = useState<Suggestions[]>([]);
+  const [pickupCountry, setPickupCountry] = useState("");
+  const [pickupLat,setPickupLat] = useState<number>();
+  const [pickupLon,setPickupLon] = useState<number>();
+  const [dropoffLat,setDropoffLat] = useState<number>();
+  const [dropoffLon,setDropoffLon] = useState<number>();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingStep, setBookingStep] = useState<"compose" | "confirmed">(
     "compose"
   );
 
+  const router = useRouter();
+
   const searchAddress = async (
     q: string,
-    setResults: (r: Suggestions[]) => void
+    setResults: (r: Suggestions[]) => void,
+    restrict?: string
   ) => {
     try {
       if (!q || q.trim().length < 3) {
@@ -57,7 +66,7 @@ function BookingPage() {
         )}&limit=8&lang=en`
       );
 
-      const res: Suggestions[] = (data.features ?? []).map((f: any) => ({
+      let res: Suggestions[] = (data.features ?? []).map((f: any) => ({
         id: String(f.properties.osm_id),
         name: f.properties.name,
         city: f.properties.city,
@@ -67,6 +76,9 @@ function BookingPage() {
         lat: f.geometry.coordinates[1],
         lng: f.geometry.coordinates[0],
       }));
+      if (restrict) {
+        res = res.filter(r => r.country == restrict);
+      }
       setResults(res);
     } catch (error) {
       if (isAxiosError(error)) {
@@ -92,7 +104,6 @@ function BookingPage() {
         const { data } = await axios.get(
           `https://photon.komoot.io/reverse?lon=${coords.longitude}&lat=${coords.latitude}`
         );
-        console.log(data)
 
         if (data.features.length) {
           const p = data.features[0].properties;
@@ -100,6 +111,9 @@ function BookingPage() {
             .filter(Boolean)
             .join(",");
           setPickup(address);
+          setPickupCountry(p.country);
+          setPickupLat(coords.latitude);
+          setPickupLon(coords.longitude);
           setAddressSuggestions([]);
         }
       } catch (error) {
@@ -118,6 +132,8 @@ function BookingPage() {
 
   const handleBookingExecution = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setBookingStep("confirmed");
   };
 
   return (
@@ -135,13 +151,33 @@ function BookingPage() {
                 onSubmit={handleBookingExecution}
                 className="p-6 md:p-8 space-y-8 flex-1"
               >
-                <motion.div variants={itemVariants} className="space-y-1.5">
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                    Where can we take you?
-                  </h1>
-                  <p className="text-sm font-normal">
-                    Select your route and time.
-                  </p>
+                <motion.div
+                  variants={itemVariants}
+                  className="flex gap-4 sm:gap-8 items-center justify-start"
+                >
+                  <motion.button
+                    whileHover="hover"
+                    whileTap={{ scale: 0.96 }}
+                    transition={springs.tight}
+                    onClick={() => router.back()}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-secondary/60 bg-background transition-colors duration-200 hover:border-secondary/20 hover:bg-secondary/2 cursor-pointer"
+                    aria-label="Return to previous layout layer"
+                  >
+                    <motion.div
+                      variants={{ hover: { x: -3 } }}
+                      transition={springs.tight}
+                    >
+                      <ArrowLeft className="h-4 w-4 text-secondary/80" />
+                    </motion.div>
+                  </motion.button>
+                  <motion.div variants={itemVariants} className="space-y-1.5">
+                    <h1 className="text-xl md:text-3xl font-bold tracking-tight">
+                      Where can we take you?
+                    </h1>
+                    <p className="text-sm font-normal">
+                      Select your route and time.
+                    </p>
+                  </motion.div>
                 </motion.div>
 
                 <motion.div
@@ -164,7 +200,9 @@ function BookingPage() {
                       icon={
                         <LocateFixed
                           onClick={getCurrentLocation}
-                          className={`h-7 w-7 text-black bg-foreground/15 rounded-lg p-1.5 ${locating ? "animate-spin bg-transparent": ""}`}
+                          className={`h-7 w-7 text-black bg-foreground/15 rounded-lg p-1.5 ${
+                            locating ? "animate-spin bg-transparent" : ""
+                          }`}
                         />
                       }
                     />
@@ -183,11 +221,13 @@ function BookingPage() {
                               whileHover={{ backgroundColor: "#f5f5f5" }}
                               onClick={() => {
                                 setPickup(formatAddress(item));
+                                setPickupLat(item.lat);
+                                setPickupLon(item.lng);
                                 setAddressSuggestions([]);
                               }}
-                              className="px-4 py-3 text-sm text-left text-neutral-800 cursor-pointer flex items-center gap-3"
+                              className="px-4 py-3 text-sm text-left text-secondary/80 cursor-pointer flex items-center gap-3"
                             >
-                              <MapPin className="h-4 w-4 text-neutral-400 shrink-0" />
+                              <MapPin className="h-4 w-4 text-secondary/80 shrink-0" />
                               <span className="truncate">
                                 {formatAddress(item)}
                               </span>
@@ -204,11 +244,16 @@ function BookingPage() {
                       id="dropoff"
                       type="text"
                       required
-                      placeholder="Where to? (Destination)"
+                      disabled={!pickup}
+                      placeholder={`${!pickup} ? "Select Pickup Location First" :Where to? (Destination)"`}
                       value={dropoff}
                       onChange={(e) => {
-                        setDropoff(e.target.value)
-                        searchAddress(e.target.value, setDropSuggestions);
+                        setDropoff(e.target.value);
+                        searchAddress(
+                          e.target.value,
+                          setDropSuggestions,
+                          pickupCountry
+                        );
                       }}
                       icon={<Navigation className="h-4 w-4 text-black" />}
                     />
@@ -228,11 +273,13 @@ function BookingPage() {
                               whileHover={{ backgroundColor: "#f5f5f5" }}
                               onClick={() => {
                                 setDropoff(formatAddress(item));
+                                setDropoffLat(item.lat);
+                                setDropoffLon(item.lng)
                                 setDropSuggestions([]);
                               }}
-                              className="px-4 py-3 text-sm text-left text-neutral-800 cursor-pointer flex items-center gap-3"
+                              className="px-4 py-3 text-sm text-left text-secondary/80 cursor-pointer flex items-center gap-3"
                             >
-                              <MapPin className="h-4 w-4 text-neutral-400 shrink-0" />
+                              <MapPin className="h-4 w-4 text-secondary/80 shrink-0" />
                               <span className="truncate">
                                 {formatAddress(item)}
                               </span>
@@ -435,16 +482,14 @@ function BookingPage() {
                 </div>
 
                 <Button
-                  variant="transparent"
-                  size="md"
+                  variant="primary"
+                  size="lg"
                   className="w-full"
                   onClick={() => {
-                    setBookingStep("compose");
-                    setPickup("");
-                    setDropoff("");
+                    router.push(`/user/search?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}&vehicle=${selectedVehicle}&mobile=${phone}&pickuplat=${pickupLat}&pickuplon=${pickupLon}&dropofflat=${dropoffLat}&dropofflon=${dropoffLon}`)
                   }}
                 >
-                  Configure New Booking
+                  View Ride
                 </Button>
               </motion.div>
             )}

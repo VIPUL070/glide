@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import Provider from "@/provider/Provider";
 import ReduxProvider from "@/redux/ReduxProvider";
 import InitUser from "@/initUser";
