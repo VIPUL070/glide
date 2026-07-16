@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import {
   MapContainer,
@@ -49,6 +49,7 @@ export default function SearchMap({
   pickup,
   dropoff,
   distance,
+  onChange
 }: SearchMapProps) {
   const [p1, setP1] = useState<[number, number] | null>([
     pickup.lat,
@@ -59,6 +60,9 @@ export default function SearchMap({
     dropoff.lon,
   ]);
   const [route, setRoute] = useState<[number, number][]>([]);
+
+  const p1Ref = useRef<[number, number] | null>([pickup.lat, pickup.lon]);
+  const p2Ref = useRef<[number, number] | null>([dropoff.lat, dropoff.lon]);
 
   const pickupIcon = new L.DivIcon({
     html: `
@@ -78,8 +82,8 @@ export default function SearchMap({
     html: `
     <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="4" y="4" width="16" height="16" rx="3" stroke="#EF4444" stroke-width="4" fill="white" />
-        <rect x="9" y="9" width="6" height="6" rx="1" fill="#EF4444" />
+        <circle cx="12" cy="12" r="8" stroke="#EF4444" stroke-width="4" fill="white" />
+        <circle cx="12" cy="12" r="2" fill="#EF4444" />
       </svg>
     </div>
   `,
@@ -91,7 +95,7 @@ export default function SearchMap({
   const loadRoute = async (loc1: [number, number], loc2: [number, number]) => {
     try {
       const response = await axios.get(
-        `https://router.projectosrm.org/route/v1/driving/${loc1[1]},${loc1[0]};${loc2[1]},${loc2[0]}?overview=full&geometries=geojson`
+        `https://router.project-osrm.org/route/v1/driving/${loc1[1]},${loc1[0]};${loc2[1]},${loc2[0]}?overview=full&geometries=geojson`
       );
 
       if (response.data.code === "Ok" && response.data.routes.length > 0) {
@@ -107,13 +111,44 @@ export default function SearchMap({
     }
   };
 
+    const reverseGeoCoding = async (lat:number,lon:number) => {
+      if (!navigator.geolocation) return;
+        try {
+          const { data } = await axios.get(
+            `https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`
+          );
+  
+          if (data.features.length) {
+            const p = data.features[0].properties;
+            return [p.name, p.street, p.city, p.state, p.country].filter(Boolean).join(",");
+          }
+        } catch (error) {
+          if (isAxiosError(error)) {
+            console.log(error.response?.data?.message || "Something went wrong");
+          } else if (error instanceof Error) {
+            console.log(error.message);
+          } else {
+            console.log("Some unexpected error occured.");
+          }
+        }
+    };
+
   const dragPickup = async (lat: number, lon: number) => {
-    setP1([lat, lon]);
-    await loadRoute([lat, lon], p2!);
+    const add = await reverseGeoCoding(lat,lon);
+    onChange(add!,dropoff.name);
+    const newP1: [number, number] = [lat, lon];
+    setP1(newP1);
+    p1Ref.current = newP1;
+    if (p2Ref.current) await loadRoute(newP1, p2Ref.current);
   };
+
   const dragDropoff = async (lat: number, lon: number) => {
-    setP2([lat, lon]);
-    await loadRoute(p1!, [lat, lon]);
+    const add = await reverseGeoCoding(lat,lon);
+    onChange(pickup.name,add!);
+    const newP2: [number, number] = [lat, lon];
+    setP2(newP2);
+    p2Ref.current = newP2;
+    if (p1Ref.current) await loadRoute(p1Ref.current, newP2);
   };
 
   const geoCoding = async (q: string): Promise<[number, number] | null> => {
@@ -146,7 +181,9 @@ export default function SearchMap({
           return;
         }
         setP1(a);
+        p1Ref.current = a;
         setP2(b);
+        p2Ref.current = b;
         await loadRoute(a, b);
       })();
     }
@@ -158,6 +195,7 @@ export default function SearchMap({
         style={{ width: "100%", height: "100%" }}
         center={p1 ?? [0, 0]}
         maxZoom={20}
+        zoomControl={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">Map</a> contributers'
@@ -208,32 +246,7 @@ export default function SearchMap({
           </>
         )}
 
-        <ZoomControls />
       </MapContainer>
     </div>
   );
 }
-
-const ZoomControls = () => {
-    const map = useMap();
-  return (
-    <>
-      <div className="w-full h-full z-0" />
-
-      <div className="absolute bottom-6 right-6 flex flex-col gap-1 z-10 bg-white/95 backdrop-blur-md rounded-xl shadow-sm border border-neutral-200/60 overflow-hidden">
-        <button
-          onClick={() => map.zoomIn()}
-          className="w-9 h-9 flex items-center justify-center font-bold border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer text-foreground"
-        >
-          ＋
-        </button>
-        <button
-          onClick={() => map.zoomOut()}
-          className="w-9 h-9 flex items-center justify-center font-bold hover:bg-neutral-50 cursor-pointer text-foreground"
-        >
-          －
-        </button>
-      </div>
-    </>
-  );
-};
