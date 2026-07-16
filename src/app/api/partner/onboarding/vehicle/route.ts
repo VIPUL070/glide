@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
             }
             user.role = 'partner'
             user.partnerStatus = "pending"
-            user.save();
+            await user.save();
 
             return NextResponse.json(
                 { message: "Vehicle registered successfully!", vehicle: newVehicle },
@@ -139,7 +139,10 @@ export async function GET() {
                 { status: 200 }
             );
         } else {
-            return null;
+            return NextResponse.json(
+                { message: "No vehicle registered for this user.", vehicle: null },
+                { status: 404 }
+            );
         }
 
     } catch (error) {
