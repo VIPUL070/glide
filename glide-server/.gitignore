@@ -13,10 +13,6 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
 # production
 /build
 
@@ -33,12 +29,38 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+
+# Uploads / user files
+uploads/
+media/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# Python (if any scripts)
+__pycache__/
+*.pyc
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Build artifacts (Node backend)
+/build
+/dist
+
+# Secrets / certs
+*.pem
+*.key
+*.p12
+*.pfx
+ssl/
 
 AGENTS.md 
 CLAUDE.md
