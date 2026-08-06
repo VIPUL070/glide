@@ -4,9 +4,11 @@ import Navbar from "@/components/layout/Navbar";
 import { auth } from "@/auth";
 import PartnerDashboard from "@/components/Partner/PartnerDashboard";
 import AdminDashboard from "@/components/Admin/AdminDashboard";
+import GeoLocationUpdater from "@/components/GeoLocationUpdater";
 
 export default async function Home() {
   const session = await auth();
+  console.log("SESSION:", session?.user?.id)
   const role = session?.user?.role;
 
   const renderDashboard = () => {
@@ -23,6 +25,7 @@ export default async function Home() {
   };
   return (
     <div className="w-full min-h-dvh bg-background">
+      <GeoLocationUpdater userId={session?.user?.id} />
       <Navbar />
       {renderDashboard()}
       <Footer />
