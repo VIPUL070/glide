@@ -98,7 +98,7 @@ const userSchema = new mongoose.Schema<IUser>({
             type: String,
             enum: ["Point"]
         },
-        coordinates: [Number,Number] 
+        coordinates: [Number] 
     },
     isOnline : {
         type: Boolean,
