@@ -3,12 +3,19 @@
 import { useState, useMemo, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Navigation2, Pin, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Navigation2,
+  Pin,
+  RefreshCw,
+  AlertCircle,
+  Sparkles,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { springs, onboardingContainerVariants } from "@/lib/animation";
 import axios, { isAxiosError } from "axios";
 import VehicleCard from "@/components/Booking/VehicleCard";
-import Button from "@/components/ui/Button"; 
+import Button from "@/components/ui/Button";
 
 const SearchMap = dynamic(() => import("@/components/Booking/SearchMap"), {
   ssr: false,
@@ -33,7 +40,7 @@ export interface VehicleData {
   pricePerKM?: number;
   waitingCharge?: number;
   status: "approved" | "pending" | "rejected";
-  rejectionReason?:string;
+  rejectionReason?: string;
   isActive: boolean;
 }
 
@@ -44,6 +51,7 @@ function SearchContent() {
   const [pickup, setpickup] = useState(searchParams.get("pickup") || "");
   const [dropoff, setDropoff] = useState(searchParams.get("dropoff") || "");
   const vehicleType = searchParams.get("vehicle");
+  const mobile = searchParams.get("mobile");
   const [km, setKm] = useState<number>(0);
 
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
@@ -82,7 +90,9 @@ function SearchContent() {
       setVehicles(verifiedData);
     } catch (err) {
       if (isAxiosError(err)) {
-        setError(err.response?.data?.message || "Failed to query localized fleets.");
+        setError(
+          err.response?.data?.message || "Failed to query localized fleets."
+        );
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -97,9 +107,13 @@ function SearchContent() {
     if (mapProps.pickup.lat && mapProps.pickup.lon) {
       (async () => {
         try {
-          await getNearbyVehicles(mapProps.pickup.lat, mapProps.pickup.lon, vehicleType);
+          await getNearbyVehicles(
+            mapProps.pickup.lat,
+            mapProps.pickup.lon,
+            vehicleType
+          );
         } catch (e) {
-          console.log(e)
+          console.log(e);
         }
       })();
     }
@@ -108,7 +122,6 @@ function SearchContent() {
   return (
     <div className="h-screen w-full pt-[9vh] relative overflow-hidden bg-foreground text-secondary antialiased select-none z-10">
       <div className="w-full h-full grid grid-cols-1 grid-rows-13 lg:grid-rows-1 lg:grid-cols-12">
-
         <div className="col-span-1 row-span-5 lg:col-span-7 xl:col-span-8 h-full w-full relative bg-primary">
           <div className="absolute top-6 left-6 z-999 block lg:hidden">
             <motion.button
@@ -141,7 +154,9 @@ function SearchContent() {
             <Navigation2 className="h-4 w-4 text-neutral-800 animate-pulse" />
             <div className="flex items-baseline gap-1.5 text-foreground font-semibold  text-sm">
               <span>{km.toFixed(1)}</span>
-              <span className="text-[11px] font-sans text-secondary/70 font-medium">km</span>
+              <span className="text-[11px] font-sans text-secondary/70 font-medium">
+                km
+              </span>
             </div>
             <div className="h-3 w-px bg-neutral-200" />
             <span className="text-xs font-medium text-secondary/80">
@@ -150,10 +165,7 @@ function SearchContent() {
           </motion.div>
         </div>
 
-
         <div className="col-span-1 row-span-8 lg:col-span-5 xl:col-span-4 border-l border-neutral-100 flex flex-col xl:items-center justify-between bg-background z-10 h-full overflow-hidden ">
-          
-
           <div className="flex-1 overflow-y-auto scrollbar-none px-6 py-6 sm:px-8 sm:py-7  space-y-6">
             <div className="flex items-center justify-between">
               <motion.button
@@ -165,7 +177,7 @@ function SearchContent() {
               >
                 <ArrowLeft className="h-4 w-4" />
               </motion.button>
-              
+
               <div className="text-right lg:text-left flex-1 lg:pl-4 space-y-0.5">
                 <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center justify-end lg:justify-start gap-2">
                   Live Route <Sparkles className="h-4 w-4 text-neutral-400" />
@@ -245,7 +257,9 @@ function SearchContent() {
                       <AlertCircle className="h-5 w-5" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-sm font-semibold text-foreground">Failed</h4>
+                      <h4 className="text-sm font-semibold text-foreground">
+                        Failed
+                      </h4>
                       <p className="text-xs text-secondary/70 max-w-xs leading-normal">
                         {error}
                       </p>
@@ -253,9 +267,15 @@ function SearchContent() {
                     <Button
                       size="sm"
                       leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
-                      onClick={() => getNearbyVehicles(mapProps.pickup.lat, mapProps.pickup.lon, vehicleType)}
+                      onClick={() =>
+                        getNearbyVehicles(
+                          mapProps.pickup.lat,
+                          mapProps.pickup.lon,
+                          vehicleType
+                        )
+                      }
                     >
-                      Retry 
+                      Retry
                     </Button>
                   </motion.div>
                 ) : vehicles.length === 0 ? (
@@ -269,15 +289,24 @@ function SearchContent() {
                       <Navigation2 className="h-4 w-4" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-sm font-semibold text-foreground">No Vehicles Nearby</h4>
+                      <h4 className="text-sm font-semibold text-foreground">
+                        No Vehicles Nearby
+                      </h4>
                       <p className="text-xs text-secondary/60 max-w-xs leading-normal">
-                        We are unable to detect any active vehicle within your zone/location.
+                        We are unable to detect any active vehicle within your
+                        zone/location.
                       </p>
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => getNearbyVehicles(mapProps.pickup.lat, mapProps.pickup.lon, vehicleType)}
-                      leftIcon={<RefreshCw className="h-4 w-4"/>}
+                      onClick={() =>
+                        getNearbyVehicles(
+                          mapProps.pickup.lat,
+                          mapProps.pickup.lon,
+                          vehicleType
+                        )
+                      }
+                      leftIcon={<RefreshCw className="h-4 w-4" />}
                     >
                       Retry
                     </Button>
@@ -295,10 +324,20 @@ function SearchContent() {
                         key={vehicle._id}
                         vehicle={vehicle}
                         distanceKm={km}
+                        positions={{
+                          pickup,
+                          dropoff,
+                          pickupLat: mapProps.pickup.lat,
+                          pickupLon: mapProps.pickup.lon,
+                          dropoffLat: mapProps.dropoff.lat,
+                          dropoffLon: mapProps.dropoff.lon,
+                          mobile,
+                        }}
                       />
                     ))}
                   </motion.div>
                 )}
+                v
               </AnimatePresence>
             </div>
           </div>
