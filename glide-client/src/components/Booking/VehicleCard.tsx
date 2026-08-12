@@ -1,15 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bike, Car, Zap, Package, Truck, LucideIcon, ShieldCheck, IndianRupee } from "lucide-react";
+import { Bike, Car, Zap, Package, Truck, LucideIcon, ShieldCheck, IndianRupee, ArrowUpRight } from "lucide-react";
 import { springs, itemVariants } from "@/lib/animation";
 import { VehicleData } from "@/app/(main)/user/search/page";
+import { useRouter } from "next/navigation";
+import Button from "../ui/Button";
 
 type VehicleType = "bike" | "car" | "loading" | "ev" | "truck";
 
 interface VehicleCardProps {
   vehicle: VehicleData;
   distanceKm: number;
+  positions: {
+    pickup:string,
+    dropoff: string,
+    pickupLat: number, 
+    pickupLon: number,
+    dropoffLat: number,
+    dropoffLon: number,
+    mobile: string | null
+  };
 }
 
 const vehicleIcons: Record<VehicleType, LucideIcon> = {
@@ -23,18 +34,21 @@ const vehicleIcons: Record<VehicleType, LucideIcon> = {
 function VehicleCard({
   vehicle,
   distanceKm,
+  positions
 }: VehicleCardProps) {
   const IconComponent = vehicleIcons[vehicle.type] || Car;
-  
+  const{pickup,dropoff,pickupLat,pickupLon,dropoffLat,dropoffLon,mobile} = positions
   const base = vehicle.baseFare ?? 0;
   const perKm = vehicle.pricePerKM ?? 0;
   const waiting = vehicle.waitingCharge ?? 0;
   const totalFare = base + perKm * distanceKm;
 
+  const router = useRouter();
+
   return (
     <motion.div
       variants={itemVariants}
-      whileHover={{ y: -4, scale: 1.015 }}
+      whileHover={{ scale: 1.015 }}
       whileTap={{ scale: 0.985 }}
       transition={springs}
       className="group relative max-w-80 rounded-3xl border border-neutral-300/80 bg-background p-4 flex flex-col justify-between overflow-hidden transition-all duration-300 select-none shadow-xs hover:border-neutral-400 hover:shadow-md cursor-pointer"
@@ -72,8 +86,8 @@ function VehicleCard({
             <motion.img
               src={vehicle.imageUrl}
               alt={vehicle.vehicleModel}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{opacity: 0 }}
+              animate={{opacity: 1 }}
               transition={{ duration: 0.4 }}
               className="object-cover h-full w-full drop-shadow-md group-hover:scale-105 transition-transform duration-500 ease-out"
             />
@@ -87,37 +101,55 @@ function VehicleCard({
 
         <div className="grid grid-cols-3 gap-1.5 w-full">
           <div className="p-2.5 rounded-xl text-left border border-neutral-200/60 bg-neutral-50/30">
-            <span className="text-[9px] font-bold uppercase tracking-wider block text-secondary/50">Base</span>
-            <span className="text-xs font-bold flex items-center text-foreground font-mono mt-0.5">
+            <span className="text-[12px] font-bold uppercase tracking-wider block text-secondary/50">Base</span>
+            <span className="text-md font-bold flex items-center text-foreground font-mono mt-0.5">
               <IndianRupee className="h-3 w-3 mr-0.5 stroke-[2.5]" />{base}
             </span>
           </div>
           <div className="p-2.5 rounded-xl text-left border border-neutral-200/60 bg-neutral-50/30">
-            <span className="text-[13px] font-bold uppercase tracking-wider block text-secondary/50">KM Fare</span>
-            <span className="text-[14px] font-bold flex items-center text-foreground font-mono mt-0.5">
+            <span className="text-[12px] font-bold uppercase tracking-wider block text-secondary/50">KM Fare</span>
+            <span className="text-md font-bold flex items-center text-foreground font-mono mt-0.5">
               <IndianRupee className="h-3.5 w-3.5 mr-0.5 stroke-[2.5]" />{perKm}<span className="text-[14px] font-sans font-medium text-secondary/60 ml-0.5">/km</span>
             </span>
           </div>
           <div className="p-2.5 rounded-xl text-left border border-neutral-200/60 bg-neutral-50/30">
-            <span className="text-[9px] font-bold uppercase tracking-wider block text-secondary/50">Wait Rate</span>
-            <span className="text-xs font-bold flex items-center text-foreground font-mono mt-0.5">
-              <IndianRupee className="h-3 w-3 mr-0.5 stroke-[2.5]" />{waiting}<span className="text-[9px] font-sans font-medium text-secondary/60 ml-0.5">/min</span>
+            <span className="text-[12px] font-bold uppercase tracking-wider block text-secondary/50">Wait Rate</span>
+            <span className="text-md font-bold flex items-center text-foreground font-mono mt-0.5">
+              <IndianRupee className="h-3 w-3 mr-0.5 stroke-[2.5]" />{waiting}<span className="text-sm font-sans font-medium text-secondary/60 ml-0.5">/min</span>
             </span>
           </div>
         </div>
 
         <div className="w-full pt-3 border-t border-neutral-200/60 flex items-center justify-between gap-2 mt-1">
           <div className="text-left">
-            <span className="text-[10px] font-bold tracking-tight block text-secondary/60 uppercase">Estimated Total</span>
+            <span className="text-[13px] font-bold tracking-tight block text-secondary/60 uppercase">Estimated Total</span>
             <div className="flex items-center text-foreground font-extrabold tracking-tight text-xl font-mono mt-0.5">
               <IndianRupee className="h-4 w-4 mr-0.5 stroke-3" />
               <span>{totalFare.toFixed(2)}</span>
             </div>
           </div>
 
-          <div className="text-xs font-bold tracking-tight px-4 py-2 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 cursor-pointer shadow-sm">
+          <Button
+            onClick={() => {
+            const url = new URLSearchParams({
+             pickup,
+             dropoff,
+             vehicle: vehicle.type,
+             driverId: vehicle.owner,
+             vehicleId: String(vehicle._id),
+             fare: String(totalFare),
+             pickupLat: String(pickupLat), 
+             pickupLon: String(pickupLon),
+             dropoffLat: String(dropoffLat),
+             dropoffLon: String(dropoffLon),
+             mobile:String(mobile)
+            })
+            router.push(`/user/checkout?${url.toString()}`)
+          }} 
+          rightIcon={<ArrowUpRight className="h-4 w-4"/>}
+          className="text-xs font-bold tracking-tight px-4 py-2 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 cursor-pointer shadow-sm">
             Book Ride
-          </div>
+          </Button>
         </div>
 
       </div>

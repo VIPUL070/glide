@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export type BookingStatus = "idle" | "requested" | "awating_payment" | "confirmed" | "started" | "completed" | "cancelled" | "rejected" | "expired"
+export type BookingStatus = "idle" | "requested" | "awaiting_payment" | "confirmed" | "started" | "completed" | "cancelled" | "rejected" | "expired"
 
 export type PaymentStatus = "pending" | "paid" | "cash" | "failed"
 
