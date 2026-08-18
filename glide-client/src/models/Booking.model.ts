@@ -23,6 +23,7 @@ export interface IBooking {
     driverMobile: string;
     bookingStatus: BookingStatus;
     paymentStatus: PaymentStatus;
+    paymentDeadline:Date;
     adminCommission: number;
     partnerAmount: number;
     pickupOtp: string;
@@ -86,13 +87,16 @@ const bookingSchema = new mongoose.Schema<IBooking>(
         },
         bookingStatus: {
             type: String,
-            enum: ["requested", "awating_payment", "confirmed", "started", "completed", "cancelled", "rejected", "expired"],
+            enum: ["idle","requested", "awaiting_payment", "confirmed", "started", "completed", "cancelled", "rejected", "expired"],
             default: "idle",
         },
         paymentStatus: {
             type: String,
             enum: ["pending", "paid", "cash", "failed"],
             default: "pending",
+        },
+        paymentDeadline: {
+           type: Date
         },
         adminCommission: {
             type: Number,

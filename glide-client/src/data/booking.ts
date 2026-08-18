@@ -37,3 +37,45 @@ export const VEHICLE_OPTIONS: VehicleOption[] = [
   { id: "loading", name: "Courier Lite", tagline: "Instant package delivery", capacity: "Max 20kg", eta: "7 mins",  icon: Package },
   { id: "truck", name: "Heavy Truck", tagline: "Large scale heavy transit", capacity: "Max 2 Tons", eta: "15 mins", icon: Truck },
 ];
+
+export type BookingStatus =
+  | "idle"
+  | "requested"
+  | "awaiting_payment"
+  | "confirmed"
+  | "started"
+  | "completed"
+  | "cancelled"
+  | "rejected"
+  | "expired";
+
+export type PaymentStatus = "pending" | "paid" | "cash" | "failed";
+
+export interface GeoLocation {
+  type: "Point";
+  coordinates: [number, number]; 
+}
+
+export interface IBookingResponse {
+  _id: string;
+  user: string ;
+  driver: string;
+  vehicle: string ;
+  pickupAddress: string;
+  dropoffAddress: string;
+  pickUpLocation: GeoLocation;
+  dropoffLocation: GeoLocation;
+  fare: number;
+  userMobile: string;
+  driverMobile: string;
+  bookingStatus: BookingStatus;
+  paymentStatus: PaymentStatus;
+  paymentDeadline?: string;
+  adminCommission: number;
+  partnerAmount: number;
+  pickupOtp?: string;
+  pickupOtpExpires?: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
