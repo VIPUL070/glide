@@ -1,9 +1,26 @@
 "use client";
+import { NAV_ITEMS, NAV_ITEMS_PARTNER, NavItem, UserRole } from "@/data/home";
+import { RootState } from "@/redux/store";
 import { motion } from "framer-motion";
-import { NAV_ITEMS } from "@/data/home";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import Badge from "./Badge";
 
-const MenuSidebar = ({handleClick}: {handleClick: () => void}) => {
+const MenuSidebar = ({
+  handleClick,
+  counts,
+}: {
+  handleClick: () => void;
+  counts: number;
+}) => {
+  const { userData } = useSelector((state: RootState) => state.user);
+
+  function useNavItems(role: UserRole): NavItem[] {
+    return role === "partner" ? NAV_ITEMS_PARTNER : NAV_ITEMS;
+  }
+
+  const NAV_ITEM = useNavItems(userData?.role as UserRole);
+
   return (
     <>
       <motion.div
@@ -34,11 +51,11 @@ const MenuSidebar = ({handleClick}: {handleClick: () => void}) => {
         {/* Navigation Items Link-Stack */}
         <nav className="flex flex-col w-full divide-y divide-secondary/30 border-t border-b border-secondary/30 font-normal tracking-wider">
           {/* Flat Navigation Item Link Array */}
-          {NAV_ITEMS.map((item, idx) => {
-            const path =
-              item === "Home"
-                ? "/"
-                : `/${item.toLowerCase().replace(/\s+/g, "-")}`;
+          {NAV_ITEM.map((item: NavItem, idx) => {
+            const path = item.href;
+            if (counts > 0 && item.label === "Pending Requests") {
+              item.pendingReq = counts;
+            }
 
             return (
               <Link
@@ -47,7 +64,10 @@ const MenuSidebar = ({handleClick}: {handleClick: () => void}) => {
                 onClick={handleClick}
                 className="py-4 text-[15px] sm:text-[16px] text-secondary uppercase font-medium block transition-all duration-200 hover:opacity-70"
               >
-                {item}
+                {item.label}
+                {item.pendingReq &&
+                  item.pendingReq !== undefined &&
+                  item.pendingReq > 0 && <Badge counts={item.pendingReq} />}
               </Link>
             );
           })}

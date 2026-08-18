@@ -1,12 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   motion,
   AnimatePresence,
   useScroll,
   useMotionValueEvent,
 } from "framer-motion";
-import { NAV_ITEMS } from "@/data/home";
+import { NAV_ITEMS, NAV_ITEMS_PARTNER, NavItem, UserRole } from "@/data/home";
 import Image from "next/image";
 import Button from "../ui/Button";
 import { containerVariants } from "@/lib/animation";
@@ -20,6 +20,8 @@ import ProfileMenu from "./ProfileMenu";
 import { signOut } from "next-auth/react";
 import { setUserData } from "@/redux/userSlice";
 import { setVehicles } from "@/redux/vehicleSlice";
+import axios, { isAxiosError } from "axios";
+import Badge from "./Badge";
 
 const Navbar = () => {
   const { scrollY } = useScroll();
@@ -30,6 +32,8 @@ const Navbar = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const [count, setCount] = useState<number>(0);
 
   const { userData } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch<AppDispatch>();
@@ -62,6 +66,33 @@ const Navbar = () => {
   if (!isNavVisible) currentVariant = "hidden";
   else if (isFloating) currentVariant = "visibleFloating";
 
+  function useNavItems(role: UserRole): NavItem[] {
+    return role === "partner" ? NAV_ITEMS_PARTNER : NAV_ITEMS;
+  }
+
+  const NAV_ITEM = useNavItems(userData?.role as UserRole);
+
+  const getPendingRequest = async () => {
+    try {
+      const { data } = await axios.get(
+        "/api/partner/bookings/pending-request"
+      );
+      setCount(Number(data.count))
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.log(error.response?.data?.message ?? "Something went wrong!");
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log("An unexpected error occurred.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    getPendingRequest();
+  }, [count]);
+
   return (
     <>
       <motion.div
@@ -72,7 +103,6 @@ const Navbar = () => {
       >
         <div className="hidden lg:grid relative w-full flex-1 self-stretch grid-cols-8">
           <div className="col-span-1 border-r-[0.5px] border-white/30 flex items-center justify-end">
-          
             <Link
               href="/"
               className="relative w-30 h-[9vh] flex items-center justify-end bg-transparent"
@@ -90,11 +120,11 @@ const Navbar = () => {
           {userData?.role !== "admin" && (
             <>
               <div className="col-span-4 flex items-center justify-center gap-8 text-[15px] tracking-tighter uppercase px-4 border-r-[0.5px] border-white/30">
-                {NAV_ITEMS.map((item, index) => {
-                  const href =
-                    item === "Home"
-                      ? "/"
-                      : `/${item.toLowerCase().replace(/\s+/g, "-")}`;
+                {NAV_ITEM.map((item: NavItem, index: number) => {
+                  const href = item.href;
+                  if(count > 0 && item.label === "Pending Requests"){
+                    item.pendingReq = count;
+                  }
 
                   return (
                     <Link
@@ -102,7 +132,12 @@ const Navbar = () => {
                       href={href}
                       className="relative group hover:opacity-70 py-1"
                     >
-                      {item}
+                      {item.label}
+                      {item.pendingReq &&
+                        item.pendingReq !== undefined &&
+                        item.pendingReq > 0 && (
+                          <Badge counts={item.pendingReq} />
+                        )}
                       <div className="absolute left-0 bottom-0 h-px w-0 origin-left rounded-sm bg-current opacity-0 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:w-full group-hover:opacity-100" />
                     </Link>
                   );
@@ -121,7 +156,11 @@ const Navbar = () => {
             </>
           )}
 
-          <div className={`col-span-1 border-l-[0.5px] border-white/20 flex justify-start items-center text-[14px] tracking-tighter uppercase pl-2 ${userData?.role === 'admin' ? "pl-[75vw]" : ""}`}>
+          <div
+            className={`col-span-1 border-l-[0.5px] border-white/20 flex justify-start items-center text-[14px] tracking-tighter uppercase pl-2 ${
+              userData?.role === "admin" ? "pl-[75vw]" : ""
+            }`}
+          >
             {userData ? (
               <ProfileMenu
                 userData={userData}
@@ -241,7 +280,7 @@ const Navbar = () => {
       {userData?.role !== "admin" && (
         <AnimatePresence>
           {isSidebarOpen && (
-            <MenuSidebar handleClick={() => setIsSidebarOpen(false)} />
+            <MenuSidebar counts={count} handleClick={() => setIsSidebarOpen(false)} />
           )}
         </AnimatePresence>
       )}

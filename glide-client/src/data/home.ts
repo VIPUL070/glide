@@ -15,7 +15,27 @@ interface VehicleCategory {
   stats: VehicleStat[];
 }
 
-export const NAV_ITEMS = ["Home", "Bookings", "About Us", "Contact"]
+export interface NavItem {
+  label: string;
+  href: string;
+  pendingReq?: number;
+}
+
+export type UserRole = "user" | "partner" | "admin";
+
+export const NAV_ITEMS: NavItem[] = [
+  { label: "Home",     href: "/" },
+  { label: "Bookings", href: "/bookings" },
+  { label: "About Us", href: "/about" },
+  { label: "Contact",  href: "/contact" },
+];
+
+export const NAV_ITEMS_PARTNER: NavItem[] = [
+  { label: "Home",             href: "/" },
+  { label: "Bookings",         href: "/partner/bookings" },
+  { label: "Pending Requests", href: "/partner/pending-requests", pendingReq: 0 },
+  { label: "Active Ride",      href: "/partner/active-ride" },
+];
 
 export const FOOTER_LINKS = [
   { name: "Privacy policy", href: "/privacy-policy" },
