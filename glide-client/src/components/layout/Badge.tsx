@@ -1,4 +1,5 @@
-const Badge = ({ counts }: { counts: number }) => (
+const Badge = ({ counts }: { counts: number }) => {
+  return (
   <span
     className="
       inline-flex items-center justify-center
@@ -6,9 +7,10 @@ const Badge = ({ counts }: { counts: number }) => (
       rounded-full bg-red-500 text-white
       text-xs font-bold leading-none
     "
-  >
-    {counts > 99 ? "99+" : counts}
+  > 
+    {counts > 99  ? "99+" : counts}
   </span>
-);
+  );
+};
 
 export default Badge;
