@@ -25,7 +25,7 @@ export default async function Home() {
   };
   return (
     <div className="w-full min-h-dvh bg-background">
-      <GeoLocationUpdater userId={session?.user?.id} />
+      {session?.user?.id && <GeoLocationUpdater userId={session?.user?.id} />}
       <Navbar />
       {renderDashboard()}
       <Footer />

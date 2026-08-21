@@ -13,7 +13,7 @@ export async function PATCH(
         await connectDB();
 
         const session = await auth();
-        if (!session?.user?.email || session.user.role !== "partner") {
+        if (!session?.user) {
             return NextResponse.json(
                 { message: "Unauthorized: Please log in first." },
                 { status: 401 }
