@@ -4,7 +4,7 @@ let socket: Socket | null = null;
 
 export const getSocket = () => {
   if(!socket){
-    socket = io(process.env.SOCKET_SERVER_URL || "http://localhost:8000")
+    socket = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "http://localhost:8000")
   }
   return socket
 }

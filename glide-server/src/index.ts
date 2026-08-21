@@ -7,7 +7,7 @@ import { Server, Socket } from "socket.io";
 import User from "./models/User.model.js";
 dotenv.config();
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 const db_url = process.env.DB_URL;
 const next_url = process.env.NEXT_BASE_URL;
 
@@ -73,7 +73,10 @@ socket.on("watcher", async ({ userId, lat, lng }) => {
 
 })
 
-server.listen(port, () => {
-  connectDB()
-  console.log(`App listening on port ${port}`)
-})
+const start = async () => {
+  await connectDB();
+  server.listen(port, () => {
+    console.log(`App listening on port ${port}`);
+  });
+};
+start();
