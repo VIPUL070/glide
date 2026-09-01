@@ -24,6 +24,7 @@ import { useTilt } from "@/hooks/useTilt";
 import { formatDate, formatTime, timeAgo, truncate } from "@/lib/utils";
 import { IBookingResponse } from "@/data/booking";
 import Button from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
 
 const SkeletonCard = ({ index }: { index: number }) => (
   <motion.div
@@ -104,6 +105,8 @@ const BookingCard = ({
   >(null);
   const [dismissed, setDismissed] = useState(false);
 
+  const router = useRouter();
+
   const isCash = booking.paymentStatus === "cash";
 
   const handleBookingAccept = async () => {
@@ -111,6 +114,7 @@ const BookingCard = ({
     setActionLoading("accept");
     setDismissed(true);
     setTimeout(() => onAccept(booking._id), 300);
+    router.push(`/partner/bookings`)
   };
 
   const handleBookingReject = async () => {
@@ -164,7 +168,7 @@ const BookingCard = ({
 
             <div className="p-5 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-1.5 text-black/40">
+                <div className="flex items-center gap-1.5 text-black/70">
                   <Clock className="w-3.5 h-3.5" strokeWidth={2} />
                   <span className="text-[12px] tracking-tight">
                     {timeAgo(booking.createdAt)}
@@ -207,7 +211,7 @@ const BookingCard = ({
                     <div className="w-px flex-1 min-h-7 bg-linear-to-b from-black/20 to-black/05 my-1" />
                   </div>
                   <div className="pb-1 min-w-0">
-                    <p className="text-[11px] text-black/50 uppercase tracking-widest mb-0.5">
+                    <p className="text-[11px] text-black/90 uppercase tracking-widest mb-0.5">
                       Pickup
                     </p>
                     <p className="text-[13.5px] font-medium text-black/80 leading-snug">
@@ -226,7 +230,7 @@ const BookingCard = ({
                     </div>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] text-black/50 uppercase tracking-widest mb-0.5">
+                    <p className="text-[11px] text-black/90 uppercase tracking-widest mb-0.5">
                       Drop-off
                     </p>
                     <p className="text-[13.5px] font-medium text-black/80 leading-snug">
@@ -455,7 +459,7 @@ const PendingRequestsPage = () => {
                     <motion.p
                       initial={{ opacity: 0, y: 3 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-[11px] text-black/40 mt-0.5"
+                      className="text-[11px] text-black/70 mt-0.5"
                     >
                       {bookings.length === 0
                         ? "No requests"
@@ -473,7 +477,7 @@ const PendingRequestsPage = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               disabled={loading || refreshing}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12.5px] font-medium text-black/55 bg-white border border-black/8 shadow-sm hover:bg-black/3 transition-colors duration-150 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12.5px] font-medium text-black/75 bg-white border border-black/8 shadow-sm hover:bg-black/3 transition-colors duration-150 disabled:opacity-50"
             >
               <motion.span
                 animate={{ rotate: refreshing ? 360 : 0 }}
@@ -502,7 +506,7 @@ const PendingRequestsPage = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            <span className="text-[12px] font-medium text-black/50">
+            <span className="text-[12px] font-medium text-black/80">
               Live — updates in real time
             </span>
             <ArrowRight className="w-3 h-3 text-secondary" strokeWidth={2.5} />

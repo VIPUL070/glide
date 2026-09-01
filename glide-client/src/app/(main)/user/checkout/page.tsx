@@ -27,6 +27,8 @@ import {
   Radio,
   XCircle,
   CheckCircle,
+  RotateCcw,
+  Compass,
 } from "lucide-react";
 import { IBookingResponse, VehicleType } from "@/data/booking";
 import { heroContainerVariants, itemVariants } from "@/lib/animation";
@@ -35,6 +37,7 @@ import FormError from "@/components/ui/FormError";
 import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
 import axios, { isAxiosError } from "axios";
+import { BookingStatus } from "@/models/Booking.model";
 
 const vehicleIcons: Record<VehicleType, LucideIcon> = {
   bike: Bike,
@@ -78,9 +81,7 @@ function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("cash");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<
-    "idle" | "requested" | "awaiting_payment" | string
-  >("idle");
+  const [status, setStatus] = useState<BookingStatus>("idle");
 
   const [booking, setBooking] = useState<IBookingResponse>();
 
@@ -127,20 +128,132 @@ function CheckoutPage() {
 
   const handleCancelRequest = async (id: string) => {
     try {
-      const { data } = await axios.patch(`/api/booking/${id}/cancel`);
-      console.log(data);
-      console.log(booking?.bookingStatus);
-      setStatus("idle");
-    } catch (err) {
-      console.error("Failed to cancel ride:", err);
+      await axios.patch(`/api/booking/${id}/cancel`);
+      setStatus("cancelled");
+    } catch (error) {
+      console.error("Failed to cancel ride:", error);
     }
+  };
+
+  const handleConfirmRequest = async (id: string) => {
+    try {
+      const { data } = await axios.patch(`/api/booking/${id}/confirm`);
+      setStatus("confirmed");
+      if (data?.success) {
+        setBooking(data.booking || booking);
+      }
+    } catch (error) {
+      console.error("Failed to confirm ride:", error);
+    }
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!booking || !paymentMethod) return;
+
+    try {
+      if (paymentMethod === "upi") {
+        const isLoaded = await loadRazorpayScript();
+        if (!isLoaded) {
+          alert("Failed to load Razorpay SDK. Please check your connection.");
+          return;
+        }
+
+        const { data } = await axios.post(`/api/payment/create`, {
+          bookingId: booking._id,
+        });
+
+        if (!data?.orderId) {
+          alert(data?.message || "Failed to create payment order.");
+          return;
+        }
+
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: data.amount,
+          currency: data.currency || "INR",
+          name: "GLIDE",
+          description: `Payment for Booking #${booking._id.slice(-6)}`,
+          order_id: data.orderId,
+          handler: async function (response: {
+            razorpay_payment_id: string;
+            razorpay_order_id: string;
+            razorpay_signature: string;
+          }) {
+            try {
+              const { data: verifyData } = await axios.post(
+                "/api/payment/verify",
+                {
+                  bookingId: booking._id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                },
+                {
+                  withCredentials: true,
+                }
+              );
+
+              if (verifyData?.success) {
+                setStatus("confirmed");
+              } else {
+                alert(verifyData?.message || "Payment verification failed.");
+              }
+            } catch (verifyError) {
+              if (isAxiosError(verifyError)) {
+                console.log(verifyError?.response?.data?.message);
+              } else if (verifyError instanceof Error) {
+                console.log(verifyError?.message);
+              } else {
+                console.error("Verification error:", verifyError);
+              }
+              alert("Payment verification failed on server.");
+            }
+          },
+          theme: {
+            color: "#000000",
+          },
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
+      } else {
+        handleConfirmRequest(booking._id);
+      }
+    } catch (error) {
+      console.error("Failed to confirm ride:", error);
+      alert("Failed to initiate payment.");
+    }
+  };
+
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined") {
+        resolve(false);
+        return;
+      }
+
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+
+      document.body.appendChild(script);
+    });
   };
 
   const findActiveBooking = async () => {
     try {
       const { data } = await axios.get(`/api/booking/active`);
-      setBooking(data.booking);
-      setStatus(data.booking.bookingStatus || data.booking || "idle");
+      if (data?.booking) {
+        setBooking(data.booking);
+        setStatus(data.booking.bookingStatus || "idle");
+      }
     } catch (err) {
       if (isAxiosError(err)) {
         console.log(
@@ -159,8 +272,8 @@ function CheckoutPage() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full pt-[9vh] pb-24 lg:pb-12 relative bg-foreground text-neutral-800 antialiased select-none z-10">
-      <header className="sticky top-0 z-40 w-full border-b border-neutral-200/80 bg-background backdrop-blur-md">
+    <div className="min-h-screen w-full pb-24 lg:pb-12 relative bg-neutral-50 text-neutral-800 antialiased select-none z-60">
+      <header className="sticky top-0 z-40 w-full border-b border-neutral-200/80 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <button
             onClick={() => router.back()}
@@ -178,24 +291,25 @@ function CheckoutPage() {
       </header>
 
       {/* Main Container */}
-      <main className="mx-auto w-full px-4 py-6 sm:px-6 md:py-8 lg:px-8 lg:py-12 bg-background">
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 md:py-8 lg:px-8 lg:py-12">
         <motion.div
           variants={heroContainerVariants}
           initial="hidden"
           animate="visible"
           className="grid grid-cols-1 gap-8 lg:grid-cols-12 xl:gap-10"
         >
+          {/* Left Column: Form & Trip Info */}
           <div className="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
             <motion.div variants={itemVariants} className="space-y-1">
               <h1 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl lg:text-4xl">
                 Confirm your Booking
               </h1>
               <p className="text-sm text-neutral-500">
-                Review route details and enter rider info to complete
-                reservation.
+                Review route details and enter rider info to complete reservation.
               </p>
             </motion.div>
 
+            {/* Trip Details */}
             <motion.div
               variants={itemVariants}
               className="rounded-3xl border border-neutral-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all hover:shadow-md"
@@ -248,7 +362,7 @@ function CheckoutPage() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-sm font-semibold text-neutral-800 wrap-break-words">
+                    <p className="mt-1 text-sm font-semibold text-neutral-800 wrap-break-word">
                       {dropoff || "Destination not selected"}
                     </p>
                   </div>
@@ -256,6 +370,7 @@ function CheckoutPage() {
               </div>
             </motion.div>
 
+            {/* Rider Details */}
             <motion.div
               variants={itemVariants}
               className="rounded-3xl border border-neutral-200/80 bg-white p-5 sm:p-6 shadow-sm transition-all hover:shadow-md"
@@ -298,7 +413,7 @@ function CheckoutPage() {
               </div>
             </motion.div>
 
-            {/* Payment Method Selector */}
+            {/* Payment Options */}
             {status === "awaiting_payment" && (
               <motion.div
                 variants={itemVariants}
@@ -308,7 +423,7 @@ function CheckoutPage() {
                   Select Payment Method
                 </h2>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("upi")}
@@ -320,7 +435,7 @@ function CheckoutPage() {
                   >
                     <Zap className="h-5 w-5" />
                     <div className="mt-4">
-                      <p className="text-sm font-semibold">Instant UPI</p>
+                      <p className="text-sm font-semibold">Instant UPI / Cards</p>
                       <p
                         className={`text-xs ${
                           paymentMethod === "upi"
@@ -328,7 +443,7 @@ function CheckoutPage() {
                             : "text-neutral-500"
                         }`}
                       >
-                        Google / PhonePe
+                        Razorpay Secure Gateway
                       </p>
                     </div>
                     {paymentMethod === "upi" && (
@@ -378,18 +493,17 @@ function CheckoutPage() {
                   Free Cancellation Guarantee
                 </p>
                 <p className="text-xs text-neutral-500">
-                  Cancel up to 15 minutes before driver dispatch with zero
-                  penalties or charges.
+                  Cancel up to 15 minutes before driver dispatch with zero penalties or charges.
                 </p>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Column: Status Cards (Idle / Requested / Awaiting Payment) */}
+          {/* Right Column: Status Cards */}
           <div className="lg:col-span-5 xl:col-span-4">
             <div className="sticky top-24">
               <AnimatePresence mode="wait">
-                {/* 1. IDLE STATUS: Request Card without Fare details */}
+                {/* 1. IDLE STATUS */}
                 {status === "idle" && (
                   <motion.div
                     key="idle-card"
@@ -399,7 +513,6 @@ function CheckoutPage() {
                     transition={{ duration: 0.25 }}
                     className="rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-xl shadow-neutral-200/50"
                   >
-                    {/* Vehicle Header */}
                     <div className="flex items-center gap-4 border-b border-neutral-100 pb-5">
                       <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-neutral-900 text-white shadow-inner">
                         <VehicleIcon className="h-8 w-8" />
@@ -414,15 +527,13 @@ function CheckoutPage() {
                       </div>
                     </div>
 
-                    {/* Booking  Summary */}
                     <div className="my-6 space-y-3.5 rounded-2xl bg-neutral-50 p-4 border border-neutral-100">
                       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
                         <Sparkles className="h-4 w-4 text-amber-500" />
                         <span>Ready for Dispatch</span>
                       </div>
                       <p className="text-sm text-neutral-600 leading-relaxed">
-                        Driver network active. Drivers nearby are on standby to
-                        accept your route request immediately.
+                        Driver network active. Drivers nearby are on standby to accept your route request immediately.
                       </p>
                       <div className="flex items-center gap-2 text-xs text-neutral-500 pt-1 border-t border-neutral-200/60">
                         <Clock className="h-3.5 w-3.5 text-neutral-400" />
@@ -456,7 +567,7 @@ function CheckoutPage() {
                   </motion.div>
                 )}
 
-                {/* 2. REQUESTED STATUS: Animated Loader */}
+                {/* 2. REQUESTED STATUS: Radar Animated Loader */}
                 {status === "requested" && (
                   <motion.div
                     key="requested-card"
@@ -464,7 +575,7 @@ function CheckoutPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.35, ease: "easeOut" }}
-                    className="relative overflow-hidden rounded-2xl border border-neutral-900/10 bg-background p-3 sm:p-6 text-secondary shadow-xl"
+                    className="relative overflow-hidden rounded-2xl border border-neutral-900/10 bg-background p-3 sm:p-5 text-secondary shadow-2xl"
                   >
                     <div className="absolute -top-24 -left-24 h-56 w-56 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
                     <div className="absolute -bottom-24 -right-24 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
@@ -525,9 +636,9 @@ function CheckoutPage() {
                             repeat: Infinity,
                             ease: "easeInOut",
                           }}
-                          className="relative flex h-15 w-15 items-center justify-center rounded-xl bg-linear-to-tr from-neutral-900 via-neutral-800 to-neutral-700 shadow-2xl border border-neutral-700"
+                          className="relative flex h-18 w-18 items-center justify-center rounded-2xl bg-linear-to-tr from-neutral-900 via-neutral-800 to-neutral-700 shadow-2xl border border-neutral-700"
                         >
-                          <VehicleIcon className="h-7 w-7 text-emerald-400" />
+                          <VehicleIcon className="h-8 w-8 text-emerald-400" />
                           <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
@@ -535,38 +646,35 @@ function CheckoutPage() {
                         </motion.div>
                       </div>
 
-                      {/* Animated Text & Status Details */}
                       <div className="space-y-2 mb-6">
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-400">
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-600">
                           <Radio className="h-3 w-3 animate-pulse" />
                           <span>Connecting Local Drivers</span>
                         </div>
                         <h3 className="text-xl font-bold tracking-tight sm:text-2xl">
                           Waiting for Rider Acceptance...
                         </h3>
-                        <p className="text-xs text-neutral-500 max-w-xs mx-auto">
-                          Broadcasting your ride request to highest-rated
-                          drivers nearby. This usually takes under a minute.
+                        <p className="text-xs text-neutral-600 max-w-xs mx-auto">
+                          Broadcasting your ride request to highest-rated drivers nearby. This usually takes under a minute.
                         </p>
                       </div>
 
-                      {/* Cancel Button */}
                       <Button
                         variant="primary"
                         size="sm"
                         onClick={() => handleCancelRequest(booking!._id)}
-                        className="w-full transition-transform active:scale-[0.98]"
+                        className="w-full transition-transform "
                         leftIcon={
                           <XCircle className="h-4 w-4 text-rose-500 transition-transform group-hover:rotate-90" />
                         }
                       >
-                        Cancel Ride
+                        Cancel Ride Request
                       </Button>
                     </div>
                   </motion.div>
                 )}
 
-                {/* 3. AWAITING_PAYMENT STATUS: Price, Fare Details & Pay Button */}
+                {/* 3. AWAITING_PAYMENT STATUS */}
                 {status === "awaiting_payment" && (
                   <motion.div
                     key="awaiting-payment-card"
@@ -576,7 +684,6 @@ function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="rounded-3xl border border-emerald-500/30 bg-white p-6 shadow-xl shadow-emerald-500/5"
                   >
-                    {/* Accepted badge */}
                     <div className="mb-4 flex items-center justify-between rounded-xl bg-emerald-50 p-3 text-emerald-800 border border-emerald-200/60">
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-5 w-5 text-emerald-600" />
@@ -586,7 +693,6 @@ function CheckoutPage() {
                       </div>
                     </div>
 
-                    {/* Vehicle Title */}
                     <div className="flex items-center gap-4 border-b border-neutral-100 pb-5">
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-neutral-900 text-white">
                         <VehicleIcon className="h-7 w-7" />
@@ -601,7 +707,6 @@ function CheckoutPage() {
                       </div>
                     </div>
 
-                    {/* Fare Details */}
                     <div className="my-6 space-y-3">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
                         Fare Breakdown
@@ -644,18 +749,163 @@ function CheckoutPage() {
                     <Button
                       variant="primary"
                       size="sm"
+                      onClick={handleConfirmPayment}
                       className="w-full active:scale-[0.98]"
                       rightIcon={<ChevronRight className="h-4 w-4" />}
                     >
-                      {paymentMethod === "cash"
-                        ? "Start Ride"
-                        : `Pay ₹${totalFare.toFixed(2)}`}
+                      {paymentMethod === "cash" ? "Confirm Ride" : "Proceed to Payment"}
                     </Button>
 
                     <div className="mt-4 flex items-center justify-center gap-2 text-[12px] text-neutral-400">
                       <Lock className="h-3.5 w-3.5 text-emerald-600" />
                       <span>Encrypted 256-bit Payment Authorization</span>
                     </div>
+                  </motion.div>
+                )}
+
+                {/* 4. CONFIRMED STATUS */}
+                {status === "confirmed" && (
+                  <motion.div
+                    key="confirmed-card"
+                    initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-white p-6 sm:p-8 text-neutral-900 shadow-2xl shadow-emerald-500/10"
+                  >
+                    <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-emerald-400/15 blur-2xl pointer-events-none" />
+
+                    <div className="flex flex-col items-center text-center">
+
+                      <div className="relative mb-5 flex h-24 w-24 items-center justify-center">
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-emerald-500/15"
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0.2, 0.4] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        />
+
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
+                          className="relative flex h-18 w-18 items-center justify-center rounded-full bg-emerald-600 shadow-xl shadow-emerald-600/30 text-white"
+                        >
+                          <svg
+                            className="h-10 w-10 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={3}
+                          >
+                            <motion.path
+                              initial={{ pathLength: 0, opacity: 0 }}
+                              animate={{ pathLength: 1, opacity: 1 }}
+                              transition={{ duration: 0.55, ease: "easeOut", delay: 0.25 }}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </motion.div>
+                      </div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.35, duration: 0.3 }}
+                        className="space-y-1.5 mb-6"
+                      >
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700 border border-emerald-200">
+                          Booking Confirmed
+                        </span>
+                        <h3 className="text-xl font-black tracking-tight text-neutral-900 sm:text-3xl">
+                          Driver on the way!
+                        </h3>
+                        <p className="text-xs text-neutral-500 max-w-xs mx-auto">
+                          Your reservation #{booking?._id?.slice(-6).toUpperCase() || "GLIDE"} has been finalized.
+                        </p>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.45 }}
+                        className="mb-6 w-full rounded-2xl bg-neutral-50 p-4 border border-neutral-100 flex items-center justify-between text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white">
+                            <VehicleIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-neutral-900">{vehicleTitle}</p>
+                            <p className="text-[11px] text-neutral-500">Arriving in ~3 mins</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-mono font-bold text-neutral-400 uppercase">Paid / COD</span>
+                          <p className="text-sm font-black text-neutral-900 flex items-center justify-end">
+                            <IndianRupee className="h-3.5 w-3.5 mr-0.5" />
+                            {totalFare.toFixed(2)}
+                          </p>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        className="w-full"
+                      >
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => {
+                            if (booking?._id) {
+                              window.location.href = `/ride/${booking._id}`;
+                            }
+                          }}
+                          className="w-full"
+                          leftIcon={<Compass className="h-4 w-4 animate-spin [animation-duration:8s]" />}
+                          rightIcon={<ChevronRight className="h-4 w-4" />}
+                        >
+                          Track Ride
+                        </Button>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 5. CANCELLED STATUS */}
+                {status === "cancelled" && (
+                  <motion.div
+                    key="cancelled-card"
+                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.25 }}
+                    className="rounded-3xl border border-rose-200/80 bg-white p-6 sm:p-8 text-neutral-900 shadow-xl shadow-rose-500/5 text-center"
+                  >
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 border border-rose-200 text-rose-600 shadow-inner">
+                      <XCircle className="h-8 w-8" />
+                    </div>
+
+                    <span className="inline-block rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-600 border border-rose-200/60 mb-2">
+                      Ride Cancelled
+                    </span>
+                    <h3 className="text-xl font-bold tracking-tight text-neutral-900 sm:text-2xl">
+                      Request Cancelled
+                    </h3>
+                    <p className="mt-1.5 text-xs text-neutral-500 leading-relaxed max-w-xs mx-auto mb-6">
+                      Your ride request was cancelled. No cancellation fees were charged to your account.
+                    </p>
+
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setStatus("idle")}
+                      className="w-full active:scale-[0.98]"
+                      leftIcon={<RotateCcw className="h-4 w-4" />}
+                    >
+                      Book Another Ride
+                    </Button>
                   </motion.div>
                 )}
               </AnimatePresence>

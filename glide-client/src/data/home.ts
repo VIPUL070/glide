@@ -18,14 +18,14 @@ interface VehicleCategory {
 export interface NavItem {
   label: string;
   href: string;
-  pendingReq?: number;
+  pendingReq?: number | string;
 }
 
 export type UserRole = "user" | "partner" | "admin";
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Home",     href: "/" },
-  { label: "Bookings", href: "/bookings" },
+  { label: "Bookings", href: "/user/bookings" },
   { label: "About Us", href: "/about" },
   { label: "Contact",  href: "/contact" },
 ];
@@ -33,7 +33,7 @@ export const NAV_ITEMS: NavItem[] = [
 export const NAV_ITEMS_PARTNER: NavItem[] = [
   { label: "Home",             href: "/" },
   { label: "Bookings",         href: "/partner/bookings" },
-  { label: "Pending Requests", href: "/partner/pending-requests", pendingReq: 0 },
+  { label: "Pending Requests", href: "/partner/pending-requests", pendingReq: "" },
   { label: "Active Ride",      href: "/partner/active-ride" },
 ];
 

@@ -245,7 +245,7 @@ function BookingPage() {
                       type="text"
                       required
                       disabled={!pickup}
-                      placeholder={`${!pickup} ? "Select Pickup Location First" :Where to? (Destination)"`}
+                      placeholder={!pickup ? "Select Pickup Location First" : "Where to? (Destination)"}
                       value={dropoff}
                       onChange={(e) => {
                         setDropoff(e.target.value);

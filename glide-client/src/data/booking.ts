@@ -1,3 +1,5 @@
+import { IUser } from "@/models/User.model";
+import { IVehicle } from "@/models/Vehicle.model";
 import { 
   Bike, 
   Car, 
@@ -61,6 +63,30 @@ export interface IBookingResponse {
   user: string ;
   driver: string;
   vehicle: string ;
+  pickupAddress: string;
+  dropoffAddress: string;
+  pickUpLocation: GeoLocation;
+  dropoffLocation: GeoLocation;
+  fare: number;
+  userMobile: string;
+  driverMobile: string;
+  bookingStatus: BookingStatus;
+  paymentStatus: PaymentStatus;
+  paymentDeadline?: string;
+  adminCommission: number;
+  partnerAmount: number;
+  pickupOtp?: string;
+  pickupOtpExpires?: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+export interface IPopulatedBookingResponse {
+  _id: string;
+  user: IUser;
+  driver: IUser;
+  vehicle: IVehicle ;
   pickupAddress: string;
   dropoffAddress: string;
   pickUpLocation: GeoLocation;
