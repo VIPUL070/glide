@@ -44,24 +44,24 @@ io.on("connection", (socket: Socket) => {
     );
   })
 
-socket.on("watcher", async ({ userId, lat, lng }) => { 
-  try {
-    if (!userId) return;
+  socket.on("watcher", async ({ userId, lat, lng }) => {
+    try {
+      if (!userId) return;
 
-    await User.findByIdAndUpdate(
-      userId,
-      {
-        location: {
-          type: "Point",
-          coordinates: [lng, lat]
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          location: {
+            type: "Point",
+            coordinates: [lng, lat]
+          }
         }
-      }
-    );
-    console.log(`Updated location for user ${userId}: [${lng}, ${lat}]`);
-  } catch (error) {
-    console.error("Error updating location:", error);
-  }
-});
+      );
+      console.log(`Updated location for user ${userId}: [${lng}, ${lat}]`);
+    } catch (error) {
+      console.error("Error updating location:", error);
+    }
+  });
 
   socket.on("disconnect", async () => {
     if (!socket.data.userId) return;
@@ -71,6 +71,27 @@ socket.on("watcher", async ({ userId, lat, lng }) => {
     );
   })
 
+})
+
+app.post(`/emit`, async (req, res) => {
+  const { event, userId, data } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if(user && user.socketId){
+      io.to(user!.socketId).emit(event, data);
+    }
+
+    return res.status(200).json({
+      success: true
+    })
+
+  } catch (error) {
+    console.log(error)
+    return res.status(200).json({
+      success: false
+    })
+  }
 })
 
 const start = async () => {

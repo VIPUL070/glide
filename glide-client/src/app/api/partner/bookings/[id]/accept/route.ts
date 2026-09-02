@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import connectDB from "@/lib/db";
 import Booking from "@/models/Booking.model";
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
@@ -32,6 +33,12 @@ export async function PATCH(
         booking.paymentDeadline = new Date(Date.now() + (5 * 60 * 1000) )
 
         await booking.save();
+
+        await axios.post(`${process.env.NEXT_PUBLIC_SOCKET_SERVER_URL}/emit`, {
+            event: "accept-booking",
+            userId: booking.user,
+            data: booking.bookingStatus
+        })
 
         return NextResponse.json(
             {message: "Booking Request Accepted"},

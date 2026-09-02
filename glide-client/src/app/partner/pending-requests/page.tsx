@@ -25,6 +25,7 @@ import { formatDate, formatTime, timeAgo, truncate } from "@/lib/utils";
 import { IBookingResponse } from "@/data/booking";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { getSocket } from "@/lib/socket";
 
 const SkeletonCard = ({ index }: { index: number }) => (
   <motion.div
@@ -408,6 +409,17 @@ const PendingRequestsPage = () => {
 
   useEffect(() => {
     fetchBookings();
+  }, []);
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on("new-booking", (data) => {
+     setBookings((prev) => [...prev,data]) 
+    })
+
+     return () => {
+      socket.off("new-booking")
+    };
   }, []);
 
   const handleAccept = async (id: string) => {

@@ -38,6 +38,7 @@ import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
 import axios, { isAxiosError } from "axios";
 import { BookingStatus } from "@/models/Booking.model";
+import { getSocket } from "@/lib/socket";
 
 const vehicleIcons: Record<VehicleType, LucideIcon> = {
   bike: Bike,
@@ -270,6 +271,21 @@ function CheckoutPage() {
   useEffect(() => {
     findActiveBooking();
   }, []);
+
+   useEffect(() => {
+      const socket = getSocket();
+      socket.on("accept-booking", (data) => {
+       setStatus(data) 
+      })
+      socket.on("reject-booking", (data) => {
+       setStatus(data) 
+      })
+  
+       return () => {
+        socket.off("accept-booking")
+        socket.off("reject-booking")
+      };
+    }, []);
 
   return (
     <div className="min-h-screen w-full pb-24 lg:pb-12 relative bg-neutral-50 text-neutral-800 antialiased select-none z-60">
