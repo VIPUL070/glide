@@ -22,6 +22,7 @@ import { setUserData } from "@/redux/userSlice";
 import { setVehicles } from "@/redux/vehicleSlice";
 import axios, { isAxiosError } from "axios";
 import Badge from "./Badge";
+import { getSocket } from "@/lib/socket";
 
 const Navbar = () => {
   const { scrollY } = useScroll();
@@ -93,6 +94,17 @@ const Navbar = () => {
     getPendingRequest();
   }, [count]);
 
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on("new-booking", (data) => {
+     setCount((prev) => Number(prev)+1)
+    })
+
+    return () => {
+     socket.off("new-booking")
+    }
+  },[count])
+
   return (
     <>
       <motion.div
@@ -135,7 +147,7 @@ const Navbar = () => {
                       {item.label}
                       {item.pendingReq &&
                         item.pendingReq !== undefined &&
-                        item.pendingReq > 0 && (
+                        Number(item.pendingReq) > 0 && (
                           <Badge counts={item.pendingReq} />
                         )}
                       <div className="absolute left-0 bottom-0 h-px w-0 origin-left rounded-sm bg-current opacity-0 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:w-full group-hover:opacity-100" />

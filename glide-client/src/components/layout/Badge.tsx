@@ -1,4 +1,4 @@
-const Badge = ({ counts }: { counts: number }) => {
+const Badge = ({ counts }: { counts: number | string }) => {
   return (
   <span
     className="
@@ -8,7 +8,7 @@ const Badge = ({ counts }: { counts: number }) => {
       text-xs font-bold leading-none
     "
   > 
-    {counts > 99  ? "99+" : counts}
+    {Number(counts) > 99  ? "99+" : counts}
   </span>
   );
 };

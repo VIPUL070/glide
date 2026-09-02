@@ -24,11 +24,13 @@ import { detailPanelVariants } from "@/lib/bookingAnimation";
 interface BookingDetailsProps {
   booking: IPopulatedBookingResponse | null;
   onCloseMobile?: () => void;
+  onActive?: () => void
 }
 
 const BookingDetails= ({
   booking,
   onCloseMobile,
+  onActive
 }:BookingDetailsProps) => {
 
   if (!booking) {
@@ -190,9 +192,9 @@ const BookingDetails= ({
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => console.info("Starting trip for:", booking._id)}
+                  onClick={onActive}
                 >
-                  <Navigation className="w-4 h-4 mr-1.5" /> Begin Trip
+                  <Navigation className="w-4 h-4 mr-1.5" /> Track Trip
                 </Button>
               </>
             )}

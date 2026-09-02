@@ -11,7 +11,7 @@ const MenuSidebar = ({
   counts,
 }: {
   handleClick: () => void;
-  counts: number;
+  counts: number | string;
 }) => {
   const { userData } = useSelector((state: RootState) => state.user);
 
@@ -53,7 +53,7 @@ const MenuSidebar = ({
           {/* Flat Navigation Item Link Array */}
           {NAV_ITEM.map((item: NavItem, idx) => {
             const path = item.href;
-            if (counts > 0 && item.label === "Pending Requests") {
+            if (Number(counts) > 0 && item.label === "Pending Requests") {
               item.pendingReq = counts;
             }
 
@@ -67,7 +67,7 @@ const MenuSidebar = ({
                 {item.label}
                 {item.pendingReq &&
                   item.pendingReq !== undefined &&
-                  item.pendingReq > 0 && <Badge counts={item.pendingReq} />}
+                  Number(item.pendingReq) > 0 && <Badge counts={item.pendingReq} />}
               </Link>
             );
           })}
