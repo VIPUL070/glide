@@ -1,12 +1,12 @@
 import { IUser } from "@/models/User.model";
 import { IVehicle } from "@/models/Vehicle.model";
-import { 
-  Bike, 
-  Car, 
-  Zap, 
-  Truck, 
+import {
+  Bike,
+  Car,
+  Zap,
+  Truck,
   Package,
-  LucideIcon, 
+  LucideIcon,
 } from "lucide-react";
 
 export type VehicleType = "bike" | "car" | "loading" | "ev" | "truck";
@@ -25,7 +25,7 @@ export interface Suggestions {
   id: string;
   name: string;
   city?: string;
-  state?:string;
+  state?: string;
   country?: string;
   countrycode?: string;
   lat: number;
@@ -33,10 +33,10 @@ export interface Suggestions {
 }
 
 export const VEHICLE_OPTIONS: VehicleOption[] = [
-  { id: "bike", name: "Moto Fast", tagline: "Zip through traffic alone", capacity: "1 Pax", eta: "2 mins",  icon: Bike},
+  { id: "bike", name: "Moto Fast", tagline: "Zip through traffic alone", capacity: "1 Pax", eta: "2 mins", icon: Bike },
   { id: "car", name: "Uber Premium", tagline: "High-end everyday rides", capacity: "4 Pax", eta: "4 mins", icon: Car, popular: true },
   { id: "ev", name: "Eco EV", tagline: "Sustainable luxury mobility", capacity: "4 Pax", eta: "5 mins", icon: Zap },
-  { id: "loading", name: "Courier Lite", tagline: "Instant package delivery", capacity: "Max 20kg", eta: "7 mins",  icon: Package },
+  { id: "loading", name: "Courier Lite", tagline: "Instant package delivery", capacity: "Max 20kg", eta: "7 mins", icon: Package },
   { id: "truck", name: "Heavy Truck", tagline: "Large scale heavy transit", capacity: "Max 2 Tons", eta: "15 mins", icon: Truck },
 ];
 
@@ -55,14 +55,14 @@ export type PaymentStatus = "pending" | "paid" | "cash" | "failed";
 
 export interface GeoLocation {
   type: "Point";
-  coordinates: [number, number]; 
+  coordinates: [number, number];
 }
 
 export interface IBookingResponse {
   _id: string;
-  user: string ;
+  user: string;
   driver: string;
-  vehicle: string ;
+  vehicle: string;
   pickupAddress: string;
   dropoffAddress: string;
   pickUpLocation: GeoLocation;
@@ -86,7 +86,7 @@ export interface IPopulatedBookingResponse {
   _id: string;
   user: IUser;
   driver: IUser;
-  vehicle: IVehicle ;
+  vehicle: IVehicle;
   pickupAddress: string;
   dropoffAddress: string;
   pickUpLocation: GeoLocation;
@@ -104,4 +104,16 @@ export interface IPopulatedBookingResponse {
   createdAt: string;
   updatedAt: string;
   __v?: number;
+}
+
+export const RIDE_STATUS: Record<BookingStatus, "arriving" | "ongoing" | "completed"> = {
+  idle: "arriving",
+  requested: "arriving",
+  awaiting_payment: "arriving",
+  confirmed: "arriving",
+  started: "ongoing",
+  completed: "completed",
+  cancelled: "completed",
+  rejected: "completed",
+  expired: "completed",
 }
