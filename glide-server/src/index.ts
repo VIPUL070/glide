@@ -67,7 +67,7 @@ io.on("connection", (socket: Socket) => {
     if (!socket.data.userId) return;
     await User.findByIdAndUpdate(
       socket.data.userId,
-      { socketId: null, isOnline: false }
+      { socketId: null, isOnline: false, "location.coordinates": null }
     );
   })
 
