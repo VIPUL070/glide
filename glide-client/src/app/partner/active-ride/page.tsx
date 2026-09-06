@@ -1,11 +1,25 @@
 "use client";
 
 import { BookingsSkeleton } from "@/components/Booking/BookingSkeleton";
-import { BookingStatus, IPopulatedBookingResponse, RIDE_STATUS } from "@/data/booking";
+import DriverPanel, { MobileSheet } from "@/components/Ride/DriverPanel";
+import {
+  BookingStatus,
+  IPopulatedBookingResponse,
+  RIDE_STATUS,
+} from "@/data/booking";
 import axios from "axios";
 import { AlertCircle } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect,useState } from "react";
+
+interface DriverPanelProps {
+  booking: IPopulatedBookingResponse;
+  status: BookingStatus;
+  distanceToPickup: number;
+  distanceToDropoff: number;
+  etaToPickup: number;
+  etaToDropoff: number;
+}
 
 const LiveRideMap = dynamic(() => import("@/components/Ride/LiveRideMap"), {
   ssr: false,
@@ -20,17 +34,19 @@ const LiveRideMap = dynamic(() => import("@/components/Ride/LiveRideMap"), {
 });
 
 const ActiveRide = () => {
-  const [booking, setBooking] = useState<IPopulatedBookingResponse | null>(
-    null
-  );
+  const [booking, setBooking] = useState<IPopulatedBookingResponse | null>(null);
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
   const [pickup, setPickup] = useState<[number, number] | null>(null);
   const [dropoff, setDropoff] = useState<[number, number] | null>(null);
 
-  const [status,setStatus] = useState<BookingStatus>();
-
+  const [status, setStatus] = useState<BookingStatus>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [distanceToPickup, setDistanceToPickup] = useState<number>(0);
+  const [distanceToDropoff, setDistanceToDropoff] = useState<number>(0);
+  const [etaToPickup, setEtaToPickup] = useState<number>(0);
+  const [etaToDropoff, setEtaToDropoff] = useState<number>(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -39,8 +55,10 @@ const ActiveRide = () => {
       try {
         setLoading(true);
         setError(null);
-        const { data } = await axios.get(`/api/partner/my-active`);
-        console.log(data);
+        const { data } = await axios.get(`/api/partner/my-active`, {
+          signal: controller.signal,
+        });
+        console.log(data)
         setBooking(data);
         setPickup([
           data.pickUpLocation.coordinates[1],
@@ -50,39 +68,30 @@ const ActiveRide = () => {
           data.dropoffLocation.coordinates[1],
           data.dropoffLocation.coordinates[0],
         ]);
-        setStatus(data.bookingStatus)
+        setStatus(data.bookingStatus);
       } catch (err: unknown) {
+        if (axios.isCancel(err)) return;
         console.error("Partner bookings API fetch failure:", err);
         setError("Unable to retrieve bookings. Please verify your connection.");
       } finally {
         setLoading(false);
       }
     };
-    getActiveRide();
 
-    return () => {
-      controller.abort();
-    };
+    getActiveRide();
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
 
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setDriverPos([lat, lng]);
-      },
-      (error) => {
-        console.log("gps error", error);
-      },
+      (pos) => setDriverPos([pos.coords.latitude, pos.coords.longitude]),
+      (err) => console.log("gps error", err),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
     );
 
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   if (loading) {
@@ -109,19 +118,86 @@ const ActiveRide = () => {
     );
   }
 
+  if (!booking || !status) return null;
+
+  const panelProps: DriverPanelProps = {
+    booking,
+    status,
+    distanceToPickup,
+    distanceToDropoff,
+    etaToPickup,
+    etaToDropoff,
+  };
+
   return (
-    <div className="h-dvh w-full bg-background text-secondary flex flex-col overflow-hidden lg:flex-row">
-      <div className="relative flex-1 h-full z-0">
-        <LiveRideMap
-          driverPos={driverPos}
-          pickup={pickup}
-          dropoff={dropoff}
-          rideStatus={RIDE_STATUS}
-          currStatus={status!}
-        />
+    <div className="h-dvh w-full bg-background text-secondary flex flex-col overflow-hidden">
+
+      <div className="hidden lg:flex h-full w-full">
+        {/* Map */}
+        <div className="relative flex-1 h-full z-0">
+          {pickup && dropoff ? (
+            <LiveRideMap
+              driverPos={driverPos}
+              pickup={pickup}
+              dropoff={dropoff}
+              rideStatus={RIDE_STATUS}
+              currStatus={status}
+              onStats={({ distanceToPickup, distanceToDropoff, etaToPickup, etaToDropoff }) => {
+                setDistanceToPickup(distanceToPickup);
+                setDistanceToDropoff(distanceToDropoff);
+                setEtaToPickup(etaToPickup);
+                setEtaToDropoff(etaToDropoff);
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-neutral-100 flex items-center justify-center text-sm text-neutral-500">
+              Waiting for location data…
+            </div>
+          )}
+        </div>
+
+        {/* Side panel */}
+        <aside
+          className="
+            relative shrink-0 h-full overflow-hidden
+            w-85 xl:w-95 2xl:w-105
+            border-l border-neutral-100
+          "
+        >
+          <DriverPanel {...panelProps} />
+        </aside>
+      </div>
+
+      {/* MOBILE / SMALL TABLET */}
+      <div className="relative flex lg:hidden h-full w-full">
+        {/* Map */}
+        <div className="absolute inset-0 z-0">
+          {pickup && dropoff ? (
+            <LiveRideMap
+              driverPos={driverPos}
+              pickup={pickup}
+              dropoff={dropoff}
+              rideStatus={RIDE_STATUS}
+              currStatus={status}
+              onStats={({ distanceToPickup, distanceToDropoff, etaToPickup, etaToDropoff }) => {
+                setDistanceToPickup(distanceToPickup);
+                setDistanceToDropoff(distanceToDropoff);
+                setEtaToPickup(etaToPickup);
+                setEtaToDropoff(etaToDropoff);
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-neutral-100 flex items-center justify-center text-sm text-neutral-500">
+              Waiting for location data…
+            </div>
+          )}
+        </div>
+
+        {/* Bottom part */}
+        <MobileSheet {...panelProps} />
       </div>
     </div>
   );
 };
 
-export default ActiveRide;
+export default ActiveRide; 

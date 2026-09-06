@@ -146,3 +146,30 @@ export const inputRowVariants = {
     hidden: { opacity: 0, y: 12 },
     visible: { opacity: 1, y: 0, transition: springs.fluid },
 };
+
+export const chatPanelVariants = {
+  hidden: { x: "100%", opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { type: "spring" as const, stiffness: 320, damping: 32 },
+  },
+  exit: {
+    x: "100%",
+    opacity: 0,
+    transition: { duration: 0.22, ease: "easeIn"as const },
+  },
+};
+
+export const dotPulseVariants = {
+  pulse: {
+    scale: [1, 1.4, 1],
+    opacity: [1, 0.5, 1],
+    transition: { repeat: Infinity, duration: 1.6, ease: "easeInOut" as const },
+  },
+};
+
+export const sheetVariants = {
+  collapsed: { y: "calc(100% - 120px)" },
+  expanded: { y: 0 },
+};

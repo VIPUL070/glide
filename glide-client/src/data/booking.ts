@@ -117,3 +117,15 @@ export const RIDE_STATUS: Record<BookingStatus, "arriving" | "ongoing" | "comple
   rejected: "completed",
   expired: "completed",
 }
+
+export const STATUS_LABEL: Record<BookingStatus, { label: string; sublabel: string; dot: string }> = {
+  idle: { label: "Awaiting Booking", sublabel: "Booking is being initialized", dot: "bg-zinc-400" },
+  requested: { label: "Awaiting Confirmation", sublabel: "Booking is being processed", dot: "bg-amber-400" },
+  awaiting_payment: { label: "Payment Pending", sublabel: "Customer payment is pending", dot: "bg-purple-400" },
+  confirmed: { label: "Heading to Pickup", sublabel: "Drive to the pickup location", dot: "bg-amber-400" },
+  started: { label: "Ride in Progress", sublabel: "Heading to drop location", dot: "bg-emerald-400" },
+  completed: { label: "Ride Completed", sublabel: "Trip has ended successfully", dot: "bg-zinc-400" },
+  cancelled: { label: "Ride Cancelled", sublabel: "This ride was cancelled", dot: "bg-red-400" },
+  rejected: { label: "Ride Rejected", sublabel: "Ride was rejected", dot: "bg-red-400" },
+  expired: { label: "Request Expired", sublabel: "Booking timed out", dot: "bg-orange-400" },
+};

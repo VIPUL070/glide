@@ -1,9 +1,9 @@
 "use client";
 
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, Polyline, TileLayer } from "react-leaflet";
 import { BookingStatus } from "@/data/booking";
 import L from "leaflet";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 interface LiveRideMapProps {
@@ -12,6 +12,12 @@ interface LiveRideMapProps {
   dropoff: [number, number] | null;
   rideStatus: Record<BookingStatus, "arriving" | "ongoing" | "completed">;
   currStatus: BookingStatus;
+  onStats?: (data: {
+    distanceToPickup: number,
+    distanceToDropoff: number ,
+    etaToPickup: number,
+    etaToDropoff: number
+  }) => void
 }
 const LiveRideMap = ({
   driverPos,
@@ -19,9 +25,17 @@ const LiveRideMap = ({
   dropoff,
   rideStatus,
   currStatus,
+  onStats
 }: LiveRideMapProps) => {
 
   const currRideStatus = rideStatus[currStatus];
+
+  const [routeToPickup, setRouteToPickup] = useState<[number, number][]>([]);
+  const [routeToDropoff, setRouteToDropoff] = useState<[number, number][]>([]);
+
+  const showPickupMarker = currRideStatus === "arriving";
+  const showPickupRoute = currRideStatus === "arriving" && routeToPickup.length > 0;
+  const showDropoffRoute = currRideStatus !== "completed" && routeToDropoff.length > 0;
 
   const pickupIcon = new L.DivIcon({
     html: `
@@ -87,6 +101,46 @@ const LiveRideMap = ({
         if (currRideStatus === "arriving") {
           const pickupRoute = await loadRoute(drLat, drLng, pLat, pLng);
           const dropoffRoute = await loadRoute(dLat, dLng, drLat, drLng);
+
+          setRouteToPickup(
+            pickupRoute.geometry.coordinates.map(([lon, lat]: number[]) => [
+              lat,
+              lon,
+            ])
+          );
+
+          setRouteToDropoff(
+            dropoffRoute.geometry.coordinates.map(([lon, lat]: number[]) => [
+              lat,
+              lon,
+            ])
+          );
+
+          onStats?.({
+            distanceToPickup: (pickupRoute?.distance ?? 0)/1000,
+            distanceToDropoff: (dropoffRoute?.distance ?? 0)/1000,
+            etaToPickup: (pickupRoute?.duration ?? 0)/60,
+            etaToDropoff: (dropoffRoute?.duration ?? 0)/60,
+          })
+
+        } else {
+          setRouteToPickup([]);
+          const dropoffRoute = await loadRoute(dLat, dLng, drLat, drLng);
+
+          setRouteToDropoff(
+            dropoffRoute.geometry.coordinates.map(([lon, lat]: number[]) => [
+              lat,
+              lon,
+            ])
+          );
+
+          onStats?.({
+            distanceToPickup: 0,
+            distanceToDropoff: (dropoffRoute?.distance ?? 0)/1000,
+            etaToPickup: 0,
+            etaToDropoff: (dropoffRoute?.duration ?? 0)/60,
+          })
+
         }
       } catch (error) {
         console.error("Failed to fetch route", error);
@@ -94,29 +148,60 @@ const LiveRideMap = ({
     };
 
     getRoute();
-  }, [driverPos, pickup, dropoff, currRideStatus]);
+  }, [driverPos, pickup, dropoff, currRideStatus,onStats]);
 
   return (
     <div className="w-full h-full relative">
       <MapContainer
         style={{ width: "100%", height: "100%" }}
         center={pickup ?? [0, 0]}
+        zoom={13} 
         maxZoom={20}
         zoomControl={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">Map</a> contributers'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_LEAFLET_API_KEY}`}
           maxZoom={20}
         />
 
-        {pickup && <Marker position={pickup} icon={pickupIcon} draggable />}
+        {showPickupMarker && pickup && (
+          <Marker position={pickup} icon={pickupIcon} draggable/>
+        )}
 
-        {dropoff && <Marker position={dropoff} icon={dropoffIcon} draggable />}
+        {dropoff && <Marker position={dropoff} icon={dropoffIcon} draggable/>}
 
         {driverPos && (
-          <Marker position={driverPos} icon={driverIcon} draggable />
+          <Marker position={driverPos} icon={driverIcon} draggable/>
         )}
+
+        {showPickupRoute && (
+          <>
+            <Polyline
+              positions={routeToPickup}
+              pathOptions={{
+                color: "#f00e0edf",
+                weight: 5,
+                lineCap: "round",
+                dashArray: "2 10"
+              }}
+            />
+          </>
+        )}
+        {showDropoffRoute && (
+          <>
+            <Polyline
+              positions={routeToDropoff}
+              pathOptions={{
+                color: "#0a0a0a",
+                weight: 5,
+                lineCap: "round",
+                lineJoin: "round",
+              }}
+            />
+          </>
+        )}
+        
       </MapContainer>
     </div>
   );
