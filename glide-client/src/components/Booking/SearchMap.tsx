@@ -199,7 +199,7 @@ export default function SearchMap({
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">Map</a> contributers'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${process.env.NEXT_PUBLIC_LEAFLET_API_KEY}`}
           maxZoom={20}
         />
 
