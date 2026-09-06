@@ -16,22 +16,29 @@ export async function GET() {
             )
         }
 
-        const user = await User.findById({email: session.user.email});
-        if(!user){
+        const user = await User.findOne({ email: session.user.email });
+        if (!user) {
             return NextResponse.json(
-                {message:"User with this email not found,"},
-                {status:400}
+                { message: "User with this email not found," },
+                { status: 400 }
             )
         }
 
         const booking = await Booking.findOne({
             driver: user._id,
-            bookingStatus: { $in: ["confirmed" , "started" , "completed"]},
-        })
+            bookingStatus: { $in: ["confirmed", "started", "completed"] },
+        }).populate("user")
+
+        if (!booking) {
+            return NextResponse.json(
+                { message: "No active booking found." },
+                { status: 404 }
+            );
+        }
 
         return NextResponse.json(
             booking,
-            {status:200}
+            { status: 200 }
         )
 
     } catch (error) {
