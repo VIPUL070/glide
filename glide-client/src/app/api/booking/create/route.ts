@@ -4,7 +4,7 @@ import Booking from "@/models/Booking.model";
 import User from "@/models/User.model";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-import z from "zod";
+import {z} from "zod";
 
 const LocationSchema = z.object({
     type: z.literal("Point"),

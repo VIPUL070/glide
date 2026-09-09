@@ -3,7 +3,7 @@ import connectDB from "@/lib/db";
 import User from "@/models/User.model";
 import Vehicle from "@/models/Vehicle.model";
 import { NextRequest, NextResponse } from "next/server";
-import z from "zod";
+import {z} from "zod";
 
 const nearbyVehicleSchema = z.object({
     lat: z.number(),

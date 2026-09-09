@@ -1,7 +1,7 @@
 import connectDB from "@/lib/db";
 import User from "@/models/User.model";
 import bcrypt from "bcryptjs";
-import z from "zod";
+import {z} from "zod";
 import { NextRequest, NextResponse } from "next/server";
 import { sendMail } from "@/lib/sendMail";
 
