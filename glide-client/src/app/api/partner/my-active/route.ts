@@ -27,7 +27,7 @@ export async function GET() {
         const booking = await Booking.findOne({
             driver: user._id,
             bookingStatus: { $in: ["confirmed", "started", "completed"] },
-        }).populate("user")
+        }).populate("user driver")
 
         if (!booking) {
             return NextResponse.json(
