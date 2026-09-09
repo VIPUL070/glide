@@ -3,7 +3,7 @@ import connectDB from "@/lib/db";
 import Booking from "@/models/Booking.model";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import z from "zod";
+import {z} from "zod";
 
 const paymentSchema = z.object({
     bookingId: z.string(),

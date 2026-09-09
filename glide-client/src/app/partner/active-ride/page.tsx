@@ -7,10 +7,12 @@ import {
   IPopulatedBookingResponse,
   RIDE_STATUS,
 } from "@/data/booking";
+import { RootState } from "@/redux/store";
 import axios from "axios";
 import { AlertCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect,useState } from "react";
+import { useSelector } from "react-redux";
 
 interface DriverPanelProps {
   booking: IPopulatedBookingResponse;
@@ -19,6 +21,7 @@ interface DriverPanelProps {
   distanceToDropoff: number;
   etaToPickup: number;
   etaToDropoff: number;
+  currRole?: string;
 }
 
 const LiveRideMap = dynamic(() => import("@/components/Ride/LiveRideMap"), {
@@ -47,6 +50,20 @@ const ActiveRide = () => {
   const [distanceToDropoff, setDistanceToDropoff] = useState<number>(0);
   const [etaToPickup, setEtaToPickup] = useState<number>(0);
   const [etaToDropoff, setEtaToDropoff] = useState<number>(0);
+
+  const [currRole , setCurrRole] = useState("");
+  const {userData} = useSelector((state:RootState) => state.user)
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    if(userData){
+      const role = userData._id === booking?.driver._id ? "driver" :"user"
+      setCurrRole(role)
+    }
+
+    return () => controller.abort();
+  },[userData, booking?.driver._id])
 
   useEffect(() => {
     const controller = new AbortController();
@@ -127,6 +144,7 @@ const ActiveRide = () => {
     distanceToDropoff,
     etaToPickup,
     etaToDropoff,
+    currRole,
   };
 
   return (
