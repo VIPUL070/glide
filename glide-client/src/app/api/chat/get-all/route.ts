@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const chatSchema = z.object({
-  bookingId: z.string() || z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+  bookingId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
       message: "Invalid booking ID format",
     }),
 });
