@@ -16,6 +16,7 @@ import BookingStats from "@/components/Booking/BookingStats";
 import BookingHero from "@/components/Booking/BookingHero";
 import BookingDetails from "@/components/Booking/BookingDetails";
 import BookingMobileDrawer from "@/components/Booking/BookingMobileDrawer";
+import { useRouter } from "next/navigation";
 
 function PartnerBookings() {
   const [bookings, setBookings] = useState<IPopulatedBookingResponse[]>([]);
@@ -31,6 +32,7 @@ function PartnerBookings() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const router = useRouter();
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -250,7 +252,7 @@ function PartnerBookings() {
 
 
           <div className="hidden md:block md:col-span-7 sticky top-6">
-            <BookingDetails booking={selectedBooking} />
+            <BookingDetails booking={selectedBooking} onActive = { () => router.push(`/user/ride/${selectedBooking?._id}`)}/>
           </div>
         </div>
       )}
