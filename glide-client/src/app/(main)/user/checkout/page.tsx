@@ -875,7 +875,7 @@ function CheckoutPage() {
                           size="sm"
                           onClick={() => {
                             if (booking?._id) {
-                              window.location.href = `/ride/${booking._id}`;
+                              window.location.href = `/user/ride/${booking._id}`;
                             }
                           }}
                           className="w-full"
