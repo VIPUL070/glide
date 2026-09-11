@@ -7,11 +7,12 @@ import {
   IPopulatedBookingResponse,
   RIDE_STATUS,
 } from "@/data/booking";
+import { getSocket } from "@/lib/socket";
 import { RootState } from "@/redux/store";
 import axios from "axios";
 import { AlertCircle } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 interface DriverPanelProps {
@@ -37,7 +38,9 @@ const LiveRideMap = dynamic(() => import("@/components/Ride/LiveRideMap"), {
 });
 
 const ActiveRide = () => {
-  const [booking, setBooking] = useState<IPopulatedBookingResponse | null>(null);
+  const [booking, setBooking] = useState<IPopulatedBookingResponse | null>(
+    null
+  );
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
   const [pickup, setPickup] = useState<[number, number] | null>(null);
   const [dropoff, setDropoff] = useState<[number, number] | null>(null);
@@ -51,19 +54,19 @@ const ActiveRide = () => {
   const [etaToPickup, setEtaToPickup] = useState<number>(0);
   const [etaToDropoff, setEtaToDropoff] = useState<number>(0);
 
-  const [currRole , setCurrRole] = useState("");
-  const {userData} = useSelector((state:RootState) => state.user)
+  const [currRole, setCurrRole] = useState("");
+  const { userData } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    if(userData){
-      const role = userData._id === booking?.driver._id ? "driver" :"user"
-      setCurrRole(role)
+    if (userData) {
+      const role = userData._id === booking?.driver._id ? "driver" : "user";
+      setCurrRole(role);
     }
 
     return () => controller.abort();
-  },[userData, booking?.driver._id])
+  }, [userData, booking?.driver._id]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -75,7 +78,7 @@ const ActiveRide = () => {
         const { data } = await axios.get(`/api/partner/my-active`, {
           signal: controller.signal,
         });
-        console.log(data)
+        console.log(data);
         setBooking(data);
         setPickup([
           data.pickUpLocation.coordinates[1],
@@ -102,14 +105,38 @@ const ActiveRide = () => {
   useEffect(() => {
     if (!navigator.geolocation) return;
 
+    const socket = getSocket();
+
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => setDriverPos([pos.coords.latitude, pos.coords.longitude]),
+      (pos) => {
+        setDriverPos([pos.coords.latitude, pos.coords.longitude]);
+        socket.emit("driver-location-update", {
+          bookingId: booking?._id,
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          status,
+        });
+      },
       (err) => console.log("gps error", err),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  }, [booking?._id, status]);
+
+  useEffect(() => {
+    if(!booking?._id) return;
+    
+    const socket = getSocket();
+    socket.emit("join", booking?._id);
+    socket.on("driver-location", ({ lat, lng }) => {
+      setDriverPos([lat, lng]);
+    });
+    return () => {
+      socket.off("join");
+      socket.off("driver-location");
+    };
+  }, [booking?._id]);
 
   if (loading) {
     return (
@@ -149,7 +176,6 @@ const ActiveRide = () => {
 
   return (
     <div className="h-dvh w-full bg-background text-secondary flex flex-col overflow-hidden">
-
       <div className="hidden lg:flex h-full w-full">
         {/* Map */}
         <div className="relative flex-1 h-full z-0">
@@ -160,7 +186,12 @@ const ActiveRide = () => {
               dropoff={dropoff}
               rideStatus={RIDE_STATUS}
               currStatus={status}
-              onStats={({ distanceToPickup, distanceToDropoff, etaToPickup, etaToDropoff }) => {
+              onStats={({
+                distanceToPickup,
+                distanceToDropoff,
+                etaToPickup,
+                etaToDropoff,
+              }) => {
                 setDistanceToPickup(distanceToPickup);
                 setDistanceToDropoff(distanceToDropoff);
                 setEtaToPickup(etaToPickup);
@@ -197,7 +228,12 @@ const ActiveRide = () => {
               dropoff={dropoff}
               rideStatus={RIDE_STATUS}
               currStatus={status}
-              onStats={({ distanceToPickup, distanceToDropoff, etaToPickup, etaToDropoff }) => {
+              onStats={({
+                distanceToPickup,
+                distanceToDropoff,
+                etaToPickup,
+                etaToDropoff,
+              }) => {
                 setDistanceToPickup(distanceToPickup);
                 setDistanceToDropoff(distanceToDropoff);
                 setEtaToPickup(etaToPickup);
@@ -218,4 +254,4 @@ const ActiveRide = () => {
   );
 };
 
-export default ActiveRide; 
+export default ActiveRide;

@@ -2,6 +2,7 @@
 
 import { IPopulatedBookingResponse } from "@/data/booking";
 import { chatPanelVariants } from "@/lib/animation";
+import { getSocket } from "@/lib/socket";
 import { formatTime } from "@/lib/utils";
 import axios, { isAxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,7 +22,7 @@ interface ChatMessage {
   text: string;
   createdAt?: string;
   updatedAt: string;
-  _v?:number | string;
+  __v?: number | string;
 }
 
 const POLL_INTERVAL = 4000;
@@ -43,7 +44,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
   const fetchMessages = useCallback(
     async (silent = false) => {
       try {
-        const { data } = await axios.get<ChatMessage []>(`/api/chat/get-all`, {
+        const { data } = await axios.get<ChatMessage[]>(`/api/chat/get-all`, {
           params: { bookingId: booking._id },
         });
         setMessages(data ?? []);
@@ -63,10 +64,14 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
     [booking._id]
   );
 
-  // Initial load + polling 
+  // Initial load + polling
   useEffect(() => {
-    fetchMessages();
-    pollRef.current = setInterval(() => fetchMessages(true), POLL_INTERVAL);
+    fetchMessages(false); 
+
+    const tick = () => {
+      if (!document.hidden) fetchMessages(true);
+    };
+    pollRef.current = setInterval(tick, POLL_INTERVAL);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
@@ -75,7 +80,6 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
 
   const sendMessage = async () => {
     const trimmed = text.trim();
@@ -88,13 +92,15 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       _id: `optimistic-${Date.now()}`,
-      _v: `optimistic-${Date.now()}`,
+      __v: `optimistic-${Date.now()}`,
     };
-    setMessages((prev) => [...(prev), optimistic]);
+    setMessages((prev) => [...prev, optimistic]);
     setText("");
     setShowSuggestions(false);
     setSuggestions([]);
     setSending(true);
+
+    const socket = getSocket();
 
     try {
       const { data } = await axios.post(`/api/chat/send`, {
@@ -102,20 +108,32 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
         sender: currRole,
         text: trimmed,
       });
-      await fetchMessages(true);
+      socket.emit("chat-message", data);
+      setMessages((prev) => prev.filter((m) => m._id !== optimistic._id));
       console.log(data);
     } catch (error) {
       setMessages((prev) => prev.filter((m) => m._id !== optimistic._id));
       setText(trimmed);
       setError(
         isAxiosError(error)
-          ? (error.response?.data?.message ?? "Failed to send")
+          ? error.response?.data?.message ?? "Failed to send"
           : "Failed to send"
       );
     } finally {
       setSending(false);
     }
   };
+
+  useEffect(() => {
+    const socket = getSocket();
+    const handler = (data: ChatMessage) => {
+      setMessages((prev) => [...prev, data]);
+    };
+    socket.on("chat-msg", handler);
+    return () => {
+      socket.off("chat-msg", handler);
+    };
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -124,17 +142,19 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
     }
   };
 
-   const getAISuggestions = async () => {
+  const getAISuggestions = async () => {
     if (loadingSuggestions) return;
     if (showSuggestions) {
       setShowSuggestions(false);
       return;
     }
     setShowSuggestions(true);
- 
-    if (suggestions.length > 0) return; // already fetched
- 
-    const lastMessage = messages.filter((m) => m.sender !== currRole).at(-1)?.text;
+
+    if (suggestions.length > 0) return;
+
+    const lastMessage = messages
+      .filter((m) => m.sender !== currRole)
+      .at(-1)?.text;
     if (!lastMessage) return;
     setLoadingSuggestions(true);
     try {
@@ -142,29 +162,30 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
         lastMessage,
         role: currRole,
       });
-      const parsedData = JSON.parse(data) 
+      const parsedData = JSON.parse(data)
       setSuggestions(parsedData.suggestions);
+      console.log(parsedData);
     } catch {
       setSuggestions([]);
     } finally {
       setLoadingSuggestions(false);
     }
   };
- 
+
   const applySuggestion = (s: string) => {
     setText(s);
     setShowSuggestions(false);
     inputRef.current?.focus();
   };
- 
+
   const isOwnMessage = (msg: ChatMessage) => msg.sender === currRole;
   const otherName =
     currRole === "driver"
-      ? (booking.user?.name ?? "Customer")
-      : (booking.driver?.name ?? "Driver");
+      ? booking.user?.name ?? "Customer"
+      : booking.driver?.name ?? "Driver";
   const otherInitial = otherName.charAt(0).toUpperCase();
 
- return (
+  return (
     <motion.div
       key="chat-panel"
       variants={chatPanelVariants}
@@ -197,7 +218,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
           <X className="w-4 h-4" />
         </button>
       </div>
- 
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-none">
         {loadingMessages && (
@@ -205,7 +226,9 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}
+                className={`flex ${
+                  i % 2 === 0 ? "justify-start" : "justify-end"
+                }`}
               >
                 <div
                   className="h-9 rounded-2xl bg-neutral-100 animate-pulse"
@@ -215,7 +238,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
             ))}
           </div>
         )}
- 
+
         {/* Error state */}
         {!loadingMessages && error && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-center">
@@ -228,7 +251,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
             </button>
           </div>
         )}
- 
+
         {/* Empty state */}
         {!loadingMessages && !error && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-center">
@@ -238,7 +261,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
             </p>
           </div>
         )}
- 
+
         {/* Message bubbles */}
         {!loadingMessages &&
           messages.map((msg, i) => {
@@ -250,7 +273,9 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.18 }}
-                className={`flex items-end gap-2 ${own ? "flex-row-reverse" : "flex-row"}`}
+                className={`flex items-end gap-2 ${
+                  own ? "flex-row-reverse" : "flex-row"
+                }`}
               >
                 {/* Avatar */}
                 {!own && (
@@ -258,7 +283,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
                     {otherInitial}
                   </div>
                 )}
- 
+
                 <div
                   className={`flex flex-col gap-0.5 max-w-[72%] ${
                     own ? "items-end" : "items-start"
@@ -266,7 +291,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
                 >
                   <div
                     className={`
-                      px-3 py-2 rounded-2xl text-sm leading-snug break-words
+                      px-3 py-2 rounded-2xl text-sm leading-snug wrap-break-word
                       ${
                         own
                           ? "bg-black text-white rounded-br-sm"
@@ -287,10 +312,10 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
               </motion.div>
             );
           })}
- 
+
         <div ref={bottomRef} />
       </div>
- 
+
       <AnimatePresence>
         {showSuggestions && (
           <motion.div
@@ -330,7 +355,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
           </motion.div>
         )}
       </AnimatePresence>
- 
+
       <AnimatePresence>
         {error && !loadingMessages && messages.length > 0 && (
           <motion.div
@@ -343,7 +368,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
           </motion.div>
         )}
       </AnimatePresence>
- 
+
       <div className="shrink-0 px-4 py-3 border-t border-neutral-100">
         <div className="flex items-center gap-2 rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2 focus-within:border-neutral-400 transition-colors">
           {/* AI suggestions  */}
@@ -361,7 +386,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
           >
             <Sparkles className="w-3.5 h-3.5" />
           </button>
- 
+
           <input
             ref={inputRef}
             type="text"
@@ -371,7 +396,7 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
             placeholder="Type a message…"
             className="flex-1 bg-transparent text-sm text-secondary placeholder:text-neutral-400 focus:outline-none min-w-0"
           />
- 
+
           {/* Send button */}
           <button
             onClick={sendMessage}

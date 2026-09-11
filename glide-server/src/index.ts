@@ -16,7 +16,8 @@ export const connectDB = async () => {
     await mongoose.connect(`${db_url}`)
     console.log("DB Connected!")
   } catch (error) {
-    console.log("Unable to connect to DB.")
+    console.error("Unable to connect to DB.", error);
+    process.exit(1);
   }
 }
 
@@ -37,16 +38,17 @@ const io = new Server(server, {
 io.on("connection", (socket: Socket) => {
 
   socket.on("identity", async (userId) => {
-    socket.data.userId = userId
-    await User.findByIdAndUpdate(
-      userId,
-      { socketId: socket.id, isOnline: true }
-    );
+    try {
+      socket.data.userId = userId;
+      await User.findByIdAndUpdate(userId, { socketId: socket.id, isOnline: true });
+    } catch (err) {
+      console.error("identity handler error:", err);
+    }
   })
 
   socket.on("watcher", async ({ userId, lat, lng }) => {
     try {
-      if (!userId) return;
+      if (!userId || typeof lat !== "number" || typeof lng !== "number") return;
 
       await User.findByIdAndUpdate(
         userId,
@@ -63,14 +65,31 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
+  socket.on("join", (bookingId) => {
+    console.log("join", bookingId);
+
+    socket.join(`ride-${bookingId}`)
+  })
+
+  socket.on("driver-location-update", (bookingId, lat, lng) => {
+    io.to(`ride-${bookingId}`).emit("driver-location", {
+      lat,
+      lng
+    })
+  })
+
+  socket.on('chat-message', (data) => {
+    io.to(`ride-${data.bookingId}`).emit('chat-msg', data);
+  })
+
   socket.on("disconnect", async () => {
     if (!socket.data.userId) return;
     await User.findByIdAndUpdate(
       socket.data.userId,
       {
-      $set: { socketId: null, isOnline: false },
-      $unset: { location: "" } 
-    }
+        $set: { socketId: null, isOnline: false },
+        $unset: { location: "" }
+      }
     );
   })
 
@@ -81,7 +100,7 @@ app.post(`/emit`, async (req, res) => {
 
   try {
     const user = await User.findById(userId);
-    if(user && user.socketId){
+    if (user && user.socketId) {
       io.to(user!.socketId).emit(event, data);
     }
 
@@ -91,7 +110,7 @@ app.post(`/emit`, async (req, res) => {
 
   } catch (error) {
     console.log(error)
-    return res.status(200).json({
+    return res.status(500).json({
       success: false
     })
   }
