@@ -36,3 +36,5 @@ export function timeAgo(date?: string) {
 export function truncate(str: string, n = 38) {
   return str.length > n ? str.slice(0, n) + "…" : str;
 }
+
+export const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
