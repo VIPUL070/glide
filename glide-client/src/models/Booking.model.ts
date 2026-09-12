@@ -28,6 +28,8 @@ export interface IBooking {
     partnerAmount: number;
     pickupOtp: string;
     pickupOtpExpires: Date;
+    dropoffOtp: string;
+    dropoffOtpExpires: Date;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -110,6 +112,12 @@ const bookingSchema = new mongoose.Schema<IBooking>(
             type: String,
         },
         pickupOtpExpires: {
+            type: Date,
+        },
+        dropoffOtp: {
+            type: String,
+        },
+        dropoffOtpExpires: {
             type: Date,
         },
     },
