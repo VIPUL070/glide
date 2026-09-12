@@ -261,6 +261,7 @@ function PartnerBookings() {
         booking={selectedBooking}
         isOpen={isMobileDrawerOpen}
         onClose={() => setIsMobileDrawerOpen(false)}
+        onActive={ () => router.push(`/partner/active-ride`)}
       />
     </main>
   );

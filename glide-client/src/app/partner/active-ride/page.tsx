@@ -23,6 +23,7 @@ interface DriverPanelProps {
   etaToPickup: number;
   etaToDropoff: number;
   currRole?: string;
+  setStatus?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const LiveRideMap = dynamic(() => import("@/components/Ride/LiveRideMap"), {
@@ -164,6 +165,18 @@ const ActiveRide = () => {
 
   if (!booking || !status) return null;
 
+  const panelSetStatus: React.Dispatch<React.SetStateAction<string>> = (
+    nextStatus
+  ) => {
+    setStatus((currentStatus) => {
+      const value =
+        typeof nextStatus === "function"
+          ? nextStatus(currentStatus ?? "")
+          : nextStatus;
+      return value as BookingStatus;
+    });
+  };
+
   const panelProps: DriverPanelProps = {
     booking,
     status,
@@ -172,6 +185,7 @@ const ActiveRide = () => {
     etaToPickup,
     etaToDropoff,
     currRole,
+    setStatus: panelSetStatus
   };
 
   return (
