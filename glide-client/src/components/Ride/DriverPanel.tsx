@@ -12,6 +12,7 @@ import { formatDate, formatTime, truncate } from "@/lib/utils";
 import { Clock, MessageCircle, Navigation, Phone, Zap } from "lucide-react";
 import Button from "../ui/Button";
 import { useState } from "react";
+import { DropoffOtpBlock, PickupOtpBlock } from "./OtpInputRow";
 
 interface DriverPanelProps {
   booking: IPopulatedBookingResponse;
@@ -22,6 +23,7 @@ interface DriverPanelProps {
   etaToDropoff: number;
   onChatOpen?: () => void;
   currRole?: string;
+  setStatus?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface StatusCapsuleProps {
@@ -83,7 +85,8 @@ const DriverPanel = ({
   etaToPickup,
   etaToDropoff,
   onChatOpen,
-  currRole
+  currRole,
+  setStatus,
 }: DriverPanelProps) => {
   const [chatOpenDesktop, setChatOpenDesktop] = useState(false);
   const isArriving = status === "confirmed";
@@ -109,7 +112,7 @@ const DriverPanel = ({
           <ChatPanel
             key="chat"
             booking={booking}
-            currRole= {currRole}
+            currRole={currRole}
             onClose={() => setChatOpenDesktop(false)}
           />
         ) : (
@@ -236,25 +239,40 @@ const DriverPanel = ({
             </div>
 
             {/* OTP */}
-            <AnimatePresence>
-              {status === "confirmed" && booking.pickupOtp && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mx-5 my-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center justify-between">
-                    <p className="text-[12px] font-medium text-amber-700">
-                      Pickup OTP
-                    </p>
-                    <span className="text-xl font-black tracking-[0.25em] text-amber-900">
-                      {booking.pickupOtp}
-                    </span>
-                  </div>
-                </motion.div>
+            {(currRole === "partner" || currRole === "driver") && (
+                <AnimatePresence>
+                  {status === "confirmed" && (
+                    <motion.div
+                      key="pickup-otp"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <PickupOtpBlock
+                        booking={booking}
+                        setStatus={setStatus!}
+                      />
+                    </motion.div>
+                  )}
+
+                  {/* Dropoff OTP */}
+                  {status === "started" && (
+                    <motion.div
+                      key="dropoff-otp"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <DropoffOtpBlock
+                        booking={booking}
+                        setStatus={setStatus!}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               )}
-            </AnimatePresence>
 
             {/* CTA buttons */}
             <div className="px-5 py-4 mt-auto space-y-2.5">
@@ -316,7 +334,7 @@ export const MobileSheet = (props: MobileSheetProps) => {
           <ChatPanel
             key="chat"
             booking={props.booking}
-            currRole= {props.currRole}
+            currRole={props.currRole}
             onClose={() => setChatOpen(false)}
           />
         )}

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
@@ -5,17 +7,18 @@ import { IPopulatedBookingResponse } from "@/data/booking";
 import { backdropVariants, drawerVariants } from "@/lib/bookingAnimation";
 import BookingDetails from "./BookingDetails";
 
-
 interface BookingMobileDrawerProps {
   booking: IPopulatedBookingResponse | null;
   isOpen: boolean;
   onClose: () => void;
+  onActive?: () => void
 }
 
 const BookingMobileDrawer= ({
   booking,
   isOpen,
   onClose,
+  onActive
 }:BookingMobileDrawerProps) => {
   // Manage Esc key and Body Scroll Lock
   useEffect(() => {
@@ -72,7 +75,7 @@ const BookingMobileDrawer= ({
             </div>
 
             <div className="overflow-y-auto p-4 pb-8">
-              <BookingDetails booking={booking} onCloseMobile={onClose} />
+              <BookingDetails booking={booking} onCloseMobile={onClose} onActive = {onActive}/>
             </div>
           </motion.div>
         </div>

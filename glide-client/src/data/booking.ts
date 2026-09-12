@@ -77,6 +77,8 @@ export interface IBookingResponse {
   partnerAmount: number;
   pickupOtp?: string;
   pickupOtpExpires?: string;
+  dropoffOtp?: string;
+  dropoffOtpExpires?: string;
   createdAt: string;
   updatedAt: string;
   __v?: number;
@@ -101,6 +103,8 @@ export interface IPopulatedBookingResponse {
   partnerAmount: number;
   pickupOtp?: string;
   pickupOtpExpires?: string;
+  dropoffOtp?: string;
+  dropoffOtpExpires?: string;
   createdAt: string;
   updatedAt: string;
   __v?: number;
