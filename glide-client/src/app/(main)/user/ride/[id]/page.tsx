@@ -1,6 +1,7 @@
 "use client";
 
 import { BookingsSkeleton } from "@/components/Booking/BookingSkeleton";
+import CompletedRide from "@/components/Ride/CompletedRide";
 import DriverPanel, { MobileSheet } from "@/components/Ride/DriverPanel";
 import {
   BookingStatus,
@@ -81,7 +82,6 @@ const ActiveRide = () => {
         const { data } = await axios.post(`/api/user/my-active`, {
           bookingId: id,
         });
-        console.log(data);
         setBooking(data);
         setPickup([
           data.pickUpLocation.coordinates[1],
@@ -123,6 +123,10 @@ const ActiveRide = () => {
         <BookingsSkeleton />
       </main>
     );
+  }
+
+  if(booking && status === "completed"){
+    <CompletedRide booking={booking} role="user"/>
   }
 
   if (error) {

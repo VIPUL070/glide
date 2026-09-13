@@ -110,7 +110,6 @@ const ChatPanel = ({ booking, onClose, currRole }: ChatPanelProps) => {
       });
       socket.emit("chat-message", data);
       setMessages((prev) => prev.filter((m) => m._id !== optimistic._id));
-      console.log(data);
     } catch (error) {
       setMessages((prev) => prev.filter((m) => m._id !== optimistic._id));
       setText(trimmed);
