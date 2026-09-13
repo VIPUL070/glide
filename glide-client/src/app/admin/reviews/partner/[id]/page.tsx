@@ -44,7 +44,6 @@ const PartnerReview = () => {
         setVehicleDetails(data.vehicle);
         setPartnerDocs(data.documents);
         setBankDetails(data.bank);
-        console.log(data);
       } catch (error) {
         console.log(error);
       } finally {

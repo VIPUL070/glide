@@ -51,7 +51,6 @@ const VehicleReview = () => {
       setLoading(true);
       try {
         const { data } = await axios.get(`/api/admin/reviews/vehicle/${id}`);
-        console.log(data)
         setVehicle(data.vehicle);
       } catch (error) {
         console.error("Failed fetching vehicle details", error);
