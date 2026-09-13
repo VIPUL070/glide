@@ -79,7 +79,7 @@ const BookingDetails= ({
         )}
       </div>
 
-      <div className="p-5 space-y-6 overflow-y-auto max-h-[calc(100vh-220px)]">
+      <div className="p-5 space-y-6 overflow-y-auto max-h-[calc(100vh-220px)] scrollbar-none">
         <BookingTimeline
           status={booking.bookingStatus}
           createdAt={booking.createdAt}

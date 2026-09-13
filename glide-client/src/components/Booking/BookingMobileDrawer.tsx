@@ -74,7 +74,7 @@ const BookingMobileDrawer= ({
               </button>
             </div>
 
-            <div className="overflow-y-auto p-4 pb-8">
+            <div className="overflow-y-auto p-4 pb-8 scrollbar-none">
               <BookingDetails booking={booking} onCloseMobile={onClose} onActive = {onActive}/>
             </div>
           </motion.div>

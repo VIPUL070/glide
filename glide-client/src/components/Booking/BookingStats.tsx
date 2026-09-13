@@ -33,7 +33,7 @@ const BookingStats= ({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-foreground/10 pb-3">
 
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none py-1">
         {tabs.map((tab) => {
           const isActive = activeFilter === tab.key;
           return (
