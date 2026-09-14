@@ -33,7 +33,7 @@ const OtpInputRow = ({
   onKeyDown,
   disabled,
 }: OtpInputRowProps) => (
-  <div className="flex justify-between gap-1.5">
+  <div className="flex justify-center gap-2.5 my-1">
     {otp.map((digit, index) => (
       <input
         key={index}
@@ -48,7 +48,7 @@ const OtpInputRow = ({
         onChange={(e) => onChange(e.target.value, index)}
         onKeyDown={(e) => onKeyDown(e, index)}
         className="
-          w-full aspect-square text-center text-sm font-semibold rounded-lg
+          w-12 h-12 sm:w-15 sm:h-15 text-center text-base font-semibold rounded-lg
           border border-neutral-200 bg-neutral-50 text-secondary
           outline-none transition-all duration-100
           placeholder:text-neutral-300

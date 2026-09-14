@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        const user = await User.findOne({email:booking.user.email});
+        const user = await User.findOne({ email: booking.user.email });
         if (!user) {
             return NextResponse.json(
                 { message: "User not found!" },
@@ -67,10 +67,10 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        if(booking.dropoffOtp !== otp){
+        if (booking.dropoffOtp !== otp) {
             return NextResponse.json(
-                {message: "Incorrect Dropoff OTP."},
-                {status:400}
+                { message: "Incorrect Dropoff OTP." },
+                { status: 400 }
             )
         }
 
@@ -81,8 +81,15 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        if (booking.paymentStatus === "cash") {
+            const adminCommission = booking.fare * 0.10;
+            const partnerAmount = booking.fare - adminCommission;
+            booking.adminCommission = adminCommission;
+            booking.partnerAmount = partnerAmount;
+        }
+        booking.paymentStatus = "paid";
         booking.bookingStatus = "completed";
-        booking.dropoffOtp ="";
+        booking.dropoffOtp = "";
         booking.dropoffOtpExpires = "";
         await booking.save();
 

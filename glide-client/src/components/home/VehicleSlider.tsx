@@ -34,7 +34,7 @@ const VehicleSlider = () => {
   const activeVehicle = VEHICLE_DATA[activeIndex];
 
   return (
-    <section ref={scrollContainerRef} className="w-full bg-background min-h-[90vh] py-12 md:py-20 px-4 sm:px-8 lg:px-16 xl:px-24 flex flex-col justify-center overflow-hidden border-b border-secondary/5 select-none">
+    <section className="w-full bg-background min-h-[90vh] py-12 md:py-20 px-4 sm:px-8 lg:px-16 xl:px-24 flex flex-col justify-center overflow-hidden border-b border-secondary/5 select-none">
       
       {/* Upper Layout Main Window */}
       <div
@@ -107,6 +107,7 @@ const VehicleSlider = () => {
           
           <div 
             onScroll={handleScroll}
+            ref={scrollContainerRef}
             className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden bg-primary"
           >
             {VEHICLE_DATA.map((vehicle) => (
@@ -142,7 +143,7 @@ const VehicleSlider = () => {
                   initial="hidden"
                   animate="visible"
                   variants={statCardVariants}
-                  className="bg-secondary/2 border border-secondary/5 rounded-xl p-4 sm:p-5 flex flex-col justify-between group hover:border-secondary/15 transition-colors duration-300 relative overflow-hidden"
+                  className="bg-secondary/20 border border-secondary/5 rounded-xl p-4 sm:p-5 flex flex-col justify-between group hover:border-secondary/15 transition-colors duration-300 relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[11px] font-bold tracking-widest text-secondary/40 uppercase">
