@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
                 { status: 404 }
             );
         }
-        
+
         const body = await req.json();
         const rawData = {
             accountHolder: body.accountHolder,
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { accountHolder, accountNumber, ifscCode, upi , mobileNumber} = validation.data;
+        const { accountHolder, accountNumber, ifscCode, upi, mobileNumber } = validation.data;
 
         const updatePayload = {
             accountHolder,
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         await user.save();
 
         return NextResponse.json(
-            { message: "Bank details saved successfully.", bankDetails},
+            { message: "Bank details saved successfully.", bankDetails },
             { status: 200 }
         );
 
@@ -104,14 +104,17 @@ export async function GET() {
         }
 
         const bankDetails = await BankDetail.findOne({ owner: user._id });
-        
+
         if (bankDetails) {
             return NextResponse.json(
-            { message: "Bank details fetched successfully.", bankDetails , mobileNumber: user.mobileNumber},
-            { status: 200 }
-        );
+                { message: "Bank details fetched successfully.", bankDetails, mobileNumber: user.mobileNumber },
+                { status: 200 }
+            );
         } else {
-            return null;
+            return NextResponse.json(
+                { message: "Bank Details Not Found." },
+                { status: 400 }
+            );
         }
 
     } catch (error) {

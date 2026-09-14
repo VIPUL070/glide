@@ -19,15 +19,11 @@ import {
   TrendingDown,
   Eye,
   EyeOff,
-  ArrowDownLeft,
-  Send,
-  FileText,
   ChevronDown,
   Plus,
   BarChart2,
   CalendarDays,
   Star,
-  Info,
   PiggyBank,
 } from "lucide-react";
 
@@ -68,7 +64,7 @@ function PartnerEarning() {
 
         if (data?.success && data?.earning) {
           const last7DaysData: EarningData[] =
-          data.earning.chartData?.slice(-7) || fallbackData;
+            data.earning.chartData?.slice(-7) || fallbackData;
           setEarningData(last7DaysData);
           setTotalEarning(data.earning.totalPartnerAmount || 0);
         }
@@ -166,10 +162,9 @@ function PartnerEarning() {
 
   return (
     <div className="w-full text-neutral-900 mt-10 space-y-6">
-  
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+          <p className="text-xs font-medium uppercase tracking-wider text-neutral-300">
             Financial Intelligence
           </p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-display">
@@ -178,16 +173,13 @@ function PartnerEarning() {
         </div>
       </div>
 
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="lg:col-span-7 bg-white rounded-4xl p-6 sm:p-8 border border-neutral-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between relative overflow-hidden"
+          className="lg:col-span-7 bg-white rounded-2xl p-3 sm:p-6 border border-neutral-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4 relative overflow-hidden"
         >
-
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-800">
@@ -205,10 +197,8 @@ function PartnerEarning() {
             </div>
           </div>
 
-
-          <div className="my-6 relative">
-
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-85 hidden sm:grid grid-cols-4 gap-1.5 pointer-events-none">
+          <div className="my-2 relative">
+            <div className="absolute right-0 top-1/4 -translate-y-1/4 opacity-85 hidden sm:grid grid-cols-4 gap-1.5 pointer-events-none">
               <div className="w-2.5 h-2.5 rounded-sm bg-neutral-100" />
               <div className="w-2.5 h-2.5 rounded-sm bg-neutral-100" />
               <div className="w-2.5 h-2.5 rounded-sm bg-amber-100" />
@@ -231,7 +221,7 @@ function PartnerEarning() {
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     exit={{ opacity: 0, filter: "blur(4px)" }}
-                    className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold tracking-tight text-neutral-950 font-display"
+                    className="text-3xl sm:text-4xl lg:text-[34px] font-extrabold tracking-tight text-neutral-950 font-display"
                   >
                     {fmt(totalEarning)}
                   </motion.h1>
@@ -241,13 +231,12 @@ function PartnerEarning() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-neutral-400 tracking-widest"
+                    className="text-3xl sm:text-4xl lg:text-[34px] font-extrabold text-neutral-400 tracking-widest"
                   >
                     ••••••••
                   </motion.h1>
                 )}
               </AnimatePresence>
-
 
               <button
                 type="button"
@@ -284,38 +273,7 @@ function PartnerEarning() {
               </span>
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-neutral-950 hover:bg-neutral-800 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
-            >
-              <ArrowDownLeft className="w-4 h-4" />
-              <span>Receive Money</span>
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-neutral-100 hover:bg-neutral-200/70 text-neutral-800 text-xs sm:text-sm font-semibold transition-all"
-            >
-              <Send className="w-4 h-4" />
-              <span>Send Money</span>
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-neutral-100 hover:bg-neutral-200/70 text-neutral-800 text-xs sm:text-sm font-semibold transition-all"
-            >
-              <FileText className="w-4 h-4" />
-              <span>Payment Request</span>
-            </motion.button>
-          </div>
         </motion.div>
-
 
         <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
           {metrics.slice(0, 2).map((metric, idx) => (
@@ -324,7 +282,7 @@ function PartnerEarning() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="bg-white rounded-4xl p-6 border border-neutral-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between"
+              className="rounded-2xl p-4 text-primary bg-linear-to-br from-[#FF6B2C] via-[#FF5412] to-[#E33B00] shadow-lg flex flex-col justify-between"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -332,13 +290,11 @@ function PartnerEarning() {
                 >
                   {metric.icon}
                 </div>
-                <span className="font-semibold text-neutral-700 text-sm">
-                  {metric.label}
-                </span>
+                <span className="font-semibold text-sm">{metric.label}</span>
               </div>
 
               <div className="mt-5 space-y-2">
-                <h3 className="text-2xl font-bold tracking-tight text-neutral-900 font-display">
+                <h3 className="text-2xl font-bold tracking-tightfont-display">
                   {metric.value}
                 </h3>
                 <div className="flex items-center gap-1.5">
@@ -356,73 +312,16 @@ function PartnerEarning() {
               </div>
             </motion.div>
           ))}
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="sm:col-span-2 bg-white rounded-4xl p-6 border border-neutral-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-800">
-                  <BarChart2 className="w-5 h-5" />
-                </div>
-                <span className="font-semibold text-neutral-700 text-sm">
-                  Net Commission Profit
-                </span>
-              </div>
-
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-600 border border-orange-200/60">
-                <TrendingUp className="w-3 h-3" />
-                +12.2% vs Last Month
-              </span>
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-2xl sm:text-3xl font-bold text-neutral-900 font-display">
-                {fmt(Math.round(totalEarning * 0.62))}
-              </h3>
-            </div>
-
-            {/* Horizontal Progress Bar */}
-            <div className="mt-5 space-y-2">
-              <div className="w-full h-2 rounded-full overflow-hidden flex bg-neutral-100">
-                <div className="h-full bg-neutral-900 w-[48%]" />
-                <div className="h-full bg-orange-500 w-[28%]" />
-                <div className="h-full bg-emerald-500 w-[24%]" />
-              </div>
-
-              {/* Progress */}
-              <div className="flex items-center justify-between text-xs text-neutral-500 pt-1 font-medium">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-neutral-900" />
-                  <span>48% Commission</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-orange-500" />
-                  <span>28% Partner Fleet</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span>24% Reserves</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
 
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="lg:col-span-7 bg-white rounded-4xl p-6 sm:p-8 border border-neutral-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between"
+          className="lg:col-span-7 bg-white rounded-2xl p-3 sm:p-6 border border-neutral-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between"
         >
-
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-neutral-900 text-lg sm:text-xl font-display">
               Earning Overview
@@ -521,7 +420,6 @@ function PartnerEarning() {
                       const isToday = index === earningData.length - 1;
                       const isBestDay = entry.earnings === max && !isToday;
 
-                      
                       const fillColor = isToday
                         ? "#18181B"
                         : isBestDay
@@ -537,89 +435,12 @@ function PartnerEarning() {
           </div>
         </motion.div>
 
-
         <div className="lg:col-span-5 flex flex-col gap-5">
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="relative rounded-4xl p-6 sm:p-7 bg-linear-to-br from-[#FF6B2C] via-[#FF5412] to-[#E33B00] text-white shadow-lg overflow-hidden flex flex-col justify-between min-h-55"
-          >
-        
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-
-       
-            <div className="absolute top-4 right-4 pointer-events-none opacity-90">
-              <div className="relative w-36 h-24">
-                {/* Back card */}
-                <div className="absolute top-0 right-4 w-28 h-16 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 transform rotate-6 p-2 text-[8px] text-white/90">
-                  <div className="flex justify-between items-center">
-                    <span>Q2 2026</span>
-                    <Info className="w-2.5 h-2.5" />
-                  </div>
-                  <p className="mt-1 text-[7px] leading-tight text-white/70">
-                    Fleet Expansion
-                  </p>
-                </div>
-                
-                <div className="absolute top-3 right-0 w-28 h-16 rounded-xl bg-white/25 backdrop-blur-lg border border-white/40 transform -rotate-3 p-2 text-[8px] text-white shadow-lg">
-                  <div className="flex justify-between items-center">
-                    <span>Q3 2026</span>
-                    <Info className="w-2.5 h-2.5" />
-                  </div>
-                  <p className="mt-1 text-[7px] leading-tight text-white/80">
-                    Gross Volume
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            
-            <div className="relative z-10 max-w-50">
-              <span className="text-xs font-medium uppercase tracking-widest text-white/70">
-                Quarterly Peak
-              </span>
-              <h4 className="text-xl sm:text-2xl font-bold font-display tracking-tight leading-tight mt-1">
-                Financial Report
-              </h4>
-            </div>
-
-           
-            <div className="relative z-10 mt-6 pt-4 border-t border-white/20">
-              <p className="text-[11px] text-white/80 font-medium mb-3">
-                Total Fleet Income Overview
-              </p>
-
-              <div className="grid grid-cols-3 gap-2 divide-x divide-white/20">
-                <div className="pr-2">
-                  <span className="block text-[11px] text-white/70">Comm.</span>
-                  <span className="block text-sm sm:text-base font-bold font-display mt-0.5">
-                    {fmt(Math.round(totalEarning * 0.18))}
-                  </span>
-                </div>
-                <div className="px-2">
-                  <span className="block text-[11px] text-white/70">Partners</span>
-                  <span className="block text-sm sm:text-base font-bold font-display mt-0.5">
-                    {fmt(Math.round(totalEarning * 0.42))}
-                  </span>
-                </div>
-                <div className="pl-2">
-                  <span className="block text-[11px] text-white/70">Fleet Gross</span>
-                  <span className="block text-sm sm:text-base font-bold font-display mt-0.5">
-                    {fmt(totalEarning)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.25 }}
-            className="bg-[#18191E] rounded-4xl p-6 sm:p-7 text-white border border-neutral-800 shadow-xl flex flex-col justify-between"
+            className="bg-[#18191E] rounded-2xl p-3 sm:p-6 text-white border border-neutral-800 shadow-xl flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -634,7 +455,6 @@ function PartnerEarning() {
                 </div>
               </div>
 
-        
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -645,7 +465,6 @@ function PartnerEarning() {
               </motion.button>
             </div>
 
-         
             <div className="mt-6 space-y-3">
               <div className="flex justify-between items-baseline text-xs">
                 <span className="text-neutral-400">Target Progress</span>
@@ -668,49 +487,46 @@ function PartnerEarning() {
                 />
               </div>
 
-              <div className="flex justify-between items-center text-[11px] text-neutral-500 pt-1">
+              <div className="flex justify-between items-center text-[11px] text-neutral-300 pt-1">
                 <span>
                   {Math.round((totalEarning / 500000) * 100)}% Completed
                 </span>
-                <span>
-                  {fmt(Math.max(500000 - totalEarning, 0))} Remaining
-                </span>
+                <span>{fmt(Math.max(500000 - totalEarning, 0))} Remaining</span>
               </div>
             </div>
           </motion.div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5 pt-2">
-        {metrics.slice(2).map((metric, idx) => (
-          <motion.div
-            key={metric.id}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 * idx }}
-            className="bg-white rounded-[28px] p-5 border border-neutral-100 shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3.5">
-              <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center ${metric.bg} ${metric.color}`}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5 pt-2">
+            {metrics.slice(2).map((metric, idx) => (
+              <motion.div
+                key={metric.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 * idx }}
+                className="bg-white rounded-2xl p-3 border border-neutral-100 shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex flex-col items-center gap-6"
               >
-                {metric.icon}
-              </div>
-              <div>
-                <span className="text-xs font-semibold text-neutral-500 block">
-                  {metric.label}
-                </span>
-                <span className="text-xl font-bold text-neutral-900 font-display">
-                  {metric.value}
-                </span>
-              </div>
-            </div>
+                <div className="w-full flex items-center justify-evenly">
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center ${metric.bg} ${metric.color}`}
+                  >
+                    {metric.icon}
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-500 block">
+                      {metric.label}
+                    </span>
+                    <span className="text-lg font-bold text-neutral-900 font-display">
+                      {metric.value}
+                    </span>
+                  </div>
+                </div>
 
-            <span className="text-xs text-neutral-400 font-medium">
-              {metric.sub}
-            </span>
-          </motion.div>
-        ))}
+                <span className="text-xs text-neutral-400 font-medium">
+                  {metric.sub}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

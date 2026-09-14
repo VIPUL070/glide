@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import connectDB from "@/lib/db";
 import Booking from "@/models/Booking.model";
+import User from "@/models/User.model";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -32,7 +33,10 @@ export async function GET() {
       earningMap[formattedKey] = 0;
     }
 
+    const driver = await User.findOne({email:session.user.email})
+
     const bookings = await Booking.find({
+      driver: driver._id,
       paymentStatus: "paid",
       createdAt: { $gte: sevenDaysAgo },
     }).select("partnerAmount createdAt").lean();

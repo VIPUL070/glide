@@ -55,7 +55,10 @@ export async function GET() {
         }).populate("owner", "name email _id")
 
         if(!pendingVehicles){
-            return null;
+            return NextResponse.json(
+            { message: "No pending vehicles found."},
+            { status: 400 }
+        );
         }
 
         return NextResponse.json(
