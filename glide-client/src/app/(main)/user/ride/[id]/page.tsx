@@ -106,16 +106,30 @@ const ActiveRide = () => {
   }, [id]);
 
   useEffect(() => {
+    const bookingId = (Array.isArray(id) ? id[0] : id) || booking?._id;
+    if (!bookingId) return;
+
     const socket = getSocket();
-    socket.emit("join", id);
-    socket.on("driver-location", ({ lat, lng }) => {
-      setDriverPos([lat, lng]);
-    });
-    return () => {
-      socket.off("join");
-      socket.off("driver-location");
+
+    const joinRoom = () => {
+      socket.emit("join", bookingId);
     };
-  }, [id]);
+    if (socket.connected) {
+      joinRoom();
+    }
+    socket.on("connect", joinRoom);
+
+    const onLocationUpdate = ({ lat, lng }: { lat: number; lng: number }) => {
+      if (typeof lat === "number" && typeof lng === "number") {
+        setDriverPos([lat, lng]);
+      }
+    };
+    socket.on("driver-location", onLocationUpdate);
+    return () => {
+      socket.off("connect", joinRoom);
+      socket.off("driver-location", onLocationUpdate);
+    };
+  }, [id, booking?._id]);
 
   if (loading) {
     return (
@@ -126,7 +140,7 @@ const ActiveRide = () => {
   }
 
   if(booking && status === "completed"){
-    <CompletedRide booking={booking} role="user"/>
+    return <CompletedRide booking={booking} role="user"/>
   }
 
   if (error) {
@@ -158,7 +172,7 @@ const ActiveRide = () => {
   };
 
   return (
-    <div className="h-dvh w-full bg-background text-secondary flex flex-col overflow-hidden">
+    <div className="h-dvh w-full bg-foreground pt-[9vh] text-secondary flex flex-col overflow-hidden">
       <div className="hidden lg:flex h-full w-full">
         {/* Map */}
         <div className="relative flex-1 h-full z-0">

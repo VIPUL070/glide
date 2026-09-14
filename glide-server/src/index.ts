@@ -66,12 +66,13 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("join", (bookingId) => {
+    if (!bookingId) return;
     console.log("join", bookingId);
-
     socket.join(`ride-${bookingId}`)
   })
 
   socket.on("driver-location-update", (bookingId, lat, lng) => {
+    if (!bookingId || lat === undefined || lng === undefined) return;
     io.to(`ride-${bookingId}`).emit("driver-location", {
       lat,
       lng

@@ -104,38 +104,64 @@ const ActiveRide = () => {
   }, []);
 
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation || !booking?._id) return;
 
     const socket = getSocket();
+    const bookingId = booking._id;
 
+    const emitLocation = (lat: number, lng: number) => {
+      setDriverPos([lat, lng]);
+      socket.emit("driver-location-update", {
+        bookingId,
+        lat,
+        lng,
+        status,
+      });
+    };
+    // 1. Send immediate location as soon as booking is loaded
+    navigator.geolocation.getCurrentPosition(
+      (pos) => emitLocation(pos.coords.latitude, pos.coords.longitude),
+      (err) => console.log("Initial GPS error:", err),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+
+    // 2. Watch for position changes
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        setDriverPos([pos.coords.latitude, pos.coords.longitude]);
-        socket.emit("driver-location-update", {
-          bookingId: booking?._id,
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          status,
-        });
-      },
-      (err) => console.log("gps error", err),
+      (pos) => emitLocation(pos.coords.latitude, pos.coords.longitude),
+      (err) => console.log("GPS watch error:", err),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
     );
 
-    return () => navigator.geolocation.clearWatch(watchId);
+    // 3. Heartbeat interval: ensures stationary testing or late-joining users receive the driver's location
+    const intervalId = setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => emitLocation(pos.coords.latitude, pos.coords.longitude),
+        () => {},
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    }, 4000);
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+      clearInterval(intervalId);
+    };
   }, [booking?._id, status]);
 
   useEffect(() => {
-    if(!booking?._id) return;
-    
+    if (!booking?._id) return;
+
     const socket = getSocket();
-    socket.emit("join", booking?._id);
-    socket.on("driver-location", ({ lat, lng }) => {
-      setDriverPos([lat, lng]);
-    });
+    const joinRoom = () => {
+      socket.emit("join", booking._id);
+    };
+
+    if (socket.connected) {
+      joinRoom();
+    }
+    socket.on("connect", joinRoom);
+
     return () => {
-      socket.off("join");
-      socket.off("driver-location");
+      socket.off("connect", joinRoom);
     };
   }, [booking?._id]);
 
@@ -163,8 +189,8 @@ const ActiveRide = () => {
     );
   }
 
-   if(booking && status === "completed"){
-    <CompletedRide booking={booking} role="driver"/>
+  if (booking && status === "completed") {
+    return <CompletedRide booking={booking} role="driver" />;
   }
 
   if (!booking || !status) return null;
@@ -189,7 +215,7 @@ const ActiveRide = () => {
     etaToPickup,
     etaToDropoff,
     currRole,
-    setStatus: panelSetStatus
+    setStatus: panelSetStatus,
   };
 
   return (
