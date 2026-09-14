@@ -122,7 +122,7 @@ function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-dvh pt-[9vh] px-[2vw] bg-black text-primary selection:bg-black/5 antialiased overflow-x-hidden">
+    <div className="min-h-dvh relative pt-[9vh] px-[2vw] bg-black text-primary selection:bg-black/5 antialiased overflow-x-hidden">
       <div className="absolute top-0 right-0 w-150 h-150 bg-blue-500/2 rounded-full blur-[160px] pointer-events-none" />
       <div className="absolute top-40 left-0 w-125 h-125 bg-amber-500/2 rounded-full blur-[140px] pointer-events-none" />
 
