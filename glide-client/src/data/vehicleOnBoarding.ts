@@ -215,6 +215,6 @@ export const STEP_CARD_CONTENT: Record<number, CardContent> = {
       "Ecosystem wallet operational"
     ],
     nextStepTitle: "Go to Bookings",
-    route: `/`
+    route: `/partner/bookings`
   }
 };

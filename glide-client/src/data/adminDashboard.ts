@@ -20,3 +20,8 @@ export interface ReviewData {
   videoKycRoomId?: string;
   owner?: Owner | null;
 }
+
+export interface EarningData {
+  date: string;
+  earnings: number;
+}
