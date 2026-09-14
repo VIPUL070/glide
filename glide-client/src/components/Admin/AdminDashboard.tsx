@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import AdminCards from "./AdminCards";
 import { DashboardStats, ReviewData } from "@/data/adminDashboard";
 import OperationCard from "./OperationCard";
+import AdminEarning from "./AdminEarning";
 
 function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -190,7 +191,10 @@ function AdminDashboard() {
             type="vehicle"
           />
         </motion.section>
+      
+        <AdminEarning />
       </main>
+
     </div>
   );
 }

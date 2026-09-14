@@ -6,6 +6,7 @@ import ProgressBar from "./ProgressBar";
 import StatusCards from "./StatusCards";
 import PricingModal from "./PricingModal";
 import { useState } from "react";
+import PartnerEarning from "./PartnerEarning";
 
 function PartnerDashboard() {
   const { userData } = useSelector((state: RootState) => state.user);
@@ -59,6 +60,8 @@ function PartnerDashboard() {
         </section>
 
         <StatusCards onOpen={() => setIsOpen(true)}/>
+
+          <PartnerEarning />
       </main>
     </div>
   );
