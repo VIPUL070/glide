@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "GLIDE - Smart Vehicle Booking Platform",
   description:
     "Why twist your day around traffic when you can just GLIDE through it? GLIDE is the next-gen vehicle booking platform built for urban creators, daily commuters, and everyone who values their time. No friction, no endless waiting—just sleek, smart, and instant rides tailored to your vibe. Book your ride and experience transportation the way it was meant to be: effortless",
-    verification: { google: '<meta name="google-site-verification" content="PQRomro6vlmqQ2dA8bk8XV5p3VNDLL34BS5KFMjzHNU" />' } 
+    verification: { google: 'content="PQRomro6vlmqQ2dA8bk8XV5p3VNDLL34BS5KFMjzHNU" />' } 
 };
 
 export default function RootLayout({
