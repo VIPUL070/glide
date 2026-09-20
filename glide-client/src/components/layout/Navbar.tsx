@@ -91,8 +91,10 @@ const Navbar = () => {
   };
 
   useEffect(() => {
+  if (userData?.role === "partner") {
     getPendingRequest();
-  }, [count]);
+  }
+ }, [userData?.role]);
 
   useEffect(() => {
     const socket = getSocket();
